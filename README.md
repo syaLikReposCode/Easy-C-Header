@@ -1,5 +1,9 @@
 # Easy C
-some random Header that might helps your C coding
+some random Header that might helps your C coding, how to use it? simply add
+```c
+#include "Easy_C/easyc.h"
+```
+to your C code.
 
 # License
 this project was licensed under the terms of MIT License
