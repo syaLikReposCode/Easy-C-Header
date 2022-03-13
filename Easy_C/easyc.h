@@ -1,3 +1,5 @@
+// WARNING! THIS HEADER IS FOR C ONLY! DO NOT INCLUDE THIS HEADER WITH C++
+// for C++ please use the .hpp version [Coming Soon]
 #if defined(__AUTHOR__)
 #undef __AUTHOR__
 #endif
@@ -6,7 +8,7 @@
 #endif
 // above lines are important if __AUTHOR__ or __EASY_C_HEADER__ is defined in the current file
 #ifndef __AUTHOR__
-#define __AUTHOR__ "syaLikShreer"
+#define __AUTHOR__ "syaLikShreer" 
 // above lines are unnecessary, you can delete it or modify it as you want
 // to delete it you need to remove '#endif' line at the very bottom of this file
 #include <stdio.h>
@@ -16,12 +18,14 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <setjmp.h>
+#include <time.h>
 
 
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <ws2def.h>
 #include <WS2tcpip.h>
+#include <Windows.h>
 #pragma comment(lib, "ws2_32.lib")
 #define OS "Windows"
 typedef uint16_t in_port_t;
@@ -35,27 +39,37 @@ typedef uint16_t in_port_t;
 #define OS "Linux"
 #endif
 
-jmp_buf ex_buf;
-#define try if(setjmp(ex_buf)==0)
-#define catch(x) else if(x)
-#define finally else
-#define throw(x) longjmp(ex_buf,x)
-
 
 #ifndef __EASY_C_HEADER__
 #define __EASY_C_HEADER__ 1
+
+
+#define PRINTABLE_CHAR "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+#define ASCII "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define ASCII_LOWER "abcdefghijklmnopqrstuvwxyz"
+#define ASCII_UPPER "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define SYMBOL "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+#define DIGITS "0123456789"
+#define LENGTH_PRINTABLE (strlen(PRINTABLE_CHAR))
+
 #define equals(X, Y)((strcmp(X, Y) == 0) ? true : false)
 #define typecheck(T) _Generic( (T), int: "integer", \
                               _Bool: "boolean", \
                               char*: "string",\
                               char: "character", \
                               double: "double", \
-                              long double: "double", \
                               float: "float", \
                               long: "long",\
                               short: "short", \
                               void *: "null", \
                                default: "unknown")
+
+jmp_buf ex_buf;
+#define try if(setjmp(ex_buf)==0)
+#define catch(x) else if(x)
+#define finally else
+#define throw(x) longjmp(ex_buf,x)
+
 typedef _Bool bools;
 typedef char* string;
 char * toLowerCase(char * t){
@@ -82,6 +96,98 @@ char * toUpperCase(char * t){
   char * s = strdup(res);
     return s;
 }
+
+// start of array struct
+
+typedef struct{
+    void * data;
+    int length;
+    int capacity;
+    int elementSize;
+} array_t;
+array_t * array_new(int elementSize){
+    array_t * a = malloc(sizeof(array_t));
+    a->data = malloc(sizeof(elementSize));
+    a->length = 0;
+    a->capacity = 1;
+    a->elementSize = elementSize;
+    return a;
+}
+void * array_get(array_t * a, int index){
+    if(index < 0 || index >= a->length)
+        return NULL;
+    return (char *)a->data + index * a->elementSize;
+}
+void array_push(array_t * a, void * element){
+    if(a->length == a->capacity){
+        a->capacity *= 2;
+        a->data = realloc(a->data, a->capacity * a->elementSize);
+    }
+    memcpy((char *)a->data + a->length * a->elementSize, element, a->elementSize);
+    a->length++;
+}
+int array_size(array_t * a){
+    return a->length;
+}
+
+void array_destroy(array_t * a){
+    free(a->data);
+    free(a);
+}
+
+int array_get_int(array_t * a, int index){
+    if(index < 0 || index >= a->length)
+        return 0;
+    return *(int *)array_get(a, index);
+}
+
+void array_remove(array_t * a, int index){
+    if(index < 0 || index >= a->length)
+        return;
+    for(int i = index; i < a->length - 1; i++){
+        memcpy((char *)a->data + i * a->elementSize, (char *)a->data + (i + 1) * a->elementSize, a->elementSize);
+    }
+    a->length--;
+}
+
+void array_insert(array_t * a, int index, void * element){
+    if(index < 0 || index >= a->length)
+        return;
+    if(a->length == a->capacity){
+        a->capacity *= 2;
+        a->data = realloc(a->data, a->capacity * a->elementSize);
+    }
+    for(int i = a->length; i > index; i--){
+        memcpy((char *)a->data + (i + 1) * a->elementSize, (char *)a->data + i * a->elementSize, a->elementSize);
+    }
+    memcpy((char *)a->data + index * a->elementSize, element, a->elementSize);
+    a->length++;
+}
+
+void array_print(array_t * a){
+    printf("[");
+    for(int i = 0; i < a->length; i++){
+        if(i != 0)
+            printf(", ");
+         printf("%s", array_get(a, i));
+    }
+    printf("]");
+}
+
+// end of array struct
+
+array_t* tokenize(char* s, char* delim){
+    array_t * a = array_new(sizeof(string));
+    char *token = (char *)malloc(sizeof(char) * 100);
+	strcpy(token, s);
+	char *tok = strtok(token, delim);
+	while(tok != NULL){
+		array_push(a, tok);
+		tok = strtok(NULL, delim);
+	}
+    return a;
+}
+
 
 void printString(char * arg){
     printf("%s", arg);
@@ -218,13 +324,7 @@ void writeFile(char * filename, char * text, _Bool append){
     free(fp);
     }
 }
-void rm(char * filename){
-    if(remove(filename) == 0){
-        printf("File %s removed successfully.\n", filename);
-    }else{
-        printf("Unable to remove the file %s.\n", filename);
-    }
-}
+
 
 char * readFile(char * filename){
     FILE * fp = fopen(filename, "r");
@@ -273,6 +373,17 @@ void readEOF(char * filename, void(*callback)(char *), _Bool binary){
     fclose(fp);
 }
 
+int file_line(char * filename){
+    unsigned int line_count = 0;
+    FILE* fp = fopen(filename, "r");
+    char line[2048]= ""; // change the size of this array to allow more characters, as long it's not above allowed C numbers and must be unsigned
+    while(fgets(line, sizeof(line), fp)){
+        line_count++;
+    }
+    fclose(fp);
+    return line_count;
+}
+
 char * repstr(char * text, char * old, char * newstr){
     char * res = (char *)malloc(sizeof(char) * 100);
     strcpy(res, text);
@@ -300,24 +411,64 @@ _Bool sbs_char_arr(char d[], char* t){
         return false;
     }
 }
-_Bool sbs_str_arr(char * d[], char * t){
-    char * stringified;
-    size_t size = sizeof(d) / sizeof(*d);
-    for(int i = 0; i <= size; i++){
-       concat(stringified, d[i]);
-       println(d[i]);
-       if(i == size){
-           concat(stringified, "\0");
-       }
-    }
-    println(stringified);
-    char * res = strstr(stringified, t);
-    if(res){
-        return true;
-    }else{
-        return false;
+
+_Bool sbs_str_arr(string d[], char* t){
+    for(int i = 0; i<sizeof(d)/sizeof(*d); i++){
+        println(toLowerCase(d[i]));
+        if(equals(toLowerCase(d[i]), toLowerCase(t))){
+            return true;
+        }
+        if(i == sizeof(d)/sizeof(*d)-1 && !equals(toLowerCase(d[i]), toLowerCase(t))){
+            return false;
+        }
     }
 }
+
+
+int randint(int min, int max){ // to use this function properly, invoke *seed* (ONLY ONCE) in your main function before using it
+    if(min >= max){
+        int temp = min;
+        min = max;
+        max = temp;
+    }
+    int res = rand() % (max - min + 1) + min;
+    return res;
+}
+void seed(){srand(time(NULL));}
+char * randstr(char* str,int length){ // to use this function properly, invoke *seed* (ONLY ONCE) in your main function before using it
+    char * res = (char *)malloc(sizeof(char) * length);
+    for(int i = 0; i<length; i++){
+        res[i] = str[randint(0, strlen(str))];
+        if(i == length-1){
+            res[i+1] = '\0';
+        }
+    }
+    return res;
+}
+char* randstrOptimize(char* str, int length, int min,int max){ // to use this function properly, invoke *seed* (ONLY ONCE) in your main function before using it
+    char * res = (char *)malloc(sizeof(char) * length);
+    for(int i = 0; i<length; i++){
+        res[i] = str[randint(min, max)];
+        if(i == length-1){
+            res[i+1] = '\0';
+        }
+    }
+    return res;
+}
+
+#ifdef _WIN32
+char* pwd(){
+    char * res = (char *)malloc(sizeof(char) * 100);
+    GetCurrentDirectory(100, res);
+    return res;
+}
+#else
+char * pwd(){
+    char * res = (char *)malloc(sizeof(char) * 100);
+    getcwd(res, 100);
+    return res;
+}
+#endif
 
 
 #if defined( _WIN32)
@@ -379,7 +530,7 @@ SOCKET createConnection(char * host, in_port_t port, _Bool showLog){
         return -1;
     }
     printf("Connected. With hostname: %s\n", host);
-
+    
     }else{
 
         WSADATA wsa;
@@ -434,7 +585,9 @@ int createConnection(char * host, in_port_t port){
 
 }
 
+
 #endif
+
 
 #endif
 #endif
