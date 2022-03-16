@@ -51,7 +51,17 @@ this Header is *almost* completely using ANSI C (standardized C)
 | function | None         | randint         | int       | returns random number of given argument, requires seed to be called in main function |
 | function | None         | randstr         | string    | returns random string of given argument, requires seed to be called in main function |
 | function | None         | randstrOptimize | string    | the same with randstr but can set the max and min, requires seed to be called in main function |
-
+| typedef  | char*        | string          | void      | for those whose beginner in C and didn't know String is char * |
+| typedef  | __Bool       | bools           | void      | boolean |
+| typedef  | uint16_t     | in_port_t       | void      | ports for createConnection in windows |
+| #define  | string       | PRINTABLE_CHAR  | string    | console-printable characters |
+| #define  | string       | ASCII           | string    | fused of ASCII_LOWER and ASCII_UPPER |
+| #define  | string       | ASCII_UPPER     | string    | printable ASCII characters |
+| #define  | string       | ASCII_LOWER     | string    | printable ASCII characters |
+| #define  | string       | DIGITS          | string    | printable DIGITS characters |
+| #define  | string       | SYMBOL          | string    | printable SYMBOLS characters |
+| #define  | string       | LENGTH_PRINTABLE| int       | length of printable characters |
+| #define  | None         | equals          | bools     | returns whether string 1 is equal in string 2 |
 
 
 # News
