@@ -8,7 +8,7 @@
 #endif
 // above lines are important if __AUTHOR__ or __EASY_C_HEADER__ is defined in the current file
 #ifndef __AUTHOR__
-#define __AUTHOR__ "syaLikShreer" 
+#define __AUTHOR__ "syaLikShreer"
 // above lines are unnecessary, you can delete it or modify it as you want
 // to delete it you need to remove '#endif' line at the very bottom of this file
 #include <stdio.h>
@@ -138,7 +138,7 @@ void array_destroy(array_t * a){
 int array_get_int(array_t * a, int index){
     if(index < 0 || index >= a->length)
         return 0;
-    return *(int *)array_get(a, index);
+    return (int)strtol(array_get(a, index), (char **)NULL, 10);
 }
 
 void array_remove(array_t * a, int index){
@@ -173,21 +173,33 @@ void array_print(array_t * a){
     }
     printf("]");
 }
+void array_set(array_t * a, int index, void * element){
+    if(index < 0 || index >= a->length)
+        return;
+    memcpy((char *)a->data + index * a->elementSize, element, a->elementSize);
+}
+void array_set_int(array_t * a, int index, int value){
+    if(index < 0 || index >= a->length)
+        return;
+    char * s = malloc(sizeof(int));
+    sprintf(s, "%d", value);
+    array_set(a, index, s);
+    free(s);
+}
 
 // end of array struct
 
 array_t* tokenize(char* s, char* delim){
     array_t * a = array_new(sizeof(string));
     char *token = (char *)malloc(sizeof(char) * 100);
-	strcpy(token, s);
-	char *tok = strtok(token, delim);
-	while(tok != NULL){
-		array_push(a, tok);
-		tok = strtok(NULL, delim);
-	}
+        strcpy(token, s);
+        char *tok = strtok(token, delim);
+        while(tok != NULL){
+                array_push(a, tok);
+                tok = strtok(NULL, delim);
+        }
     return a;
 }
-
 
 void printString(char * arg){
     printf("%s", arg);
@@ -316,12 +328,12 @@ void writeFile(char * filename, char * text, _Bool append){
     FILE * fp = fopen(filename, "a");
     fprintf(fp, "%s", text);
     fclose(fp);
-    free(fp);
+    // free(fp);
     }else{
     FILE * fp = fopen(filename, "w");
     fprintf(fp, "%s", text);
     fclose(fp);
-    free(fp);
+    // free(fp);
     }
 }
 
@@ -395,35 +407,6 @@ char * repstr(char * text, char * old, char * newstr){
     }
     return res;
 }
-
-_Bool sbs_char_arr(char d[], char* t){
-    char stringified[] = "";
-    for(int i = 0; i<sizeof(d); i++){
-    stringified[i] = d[i];
-    if(i == sizeof(d)-1){
-        stringified[i+1] = '\0';
-    }
-    }
-    char * res = strstr(stringified, t);
-    if(res){
-        return true;
-    }else{
-        return false;
-    }
-}
-
-_Bool sbs_str_arr(string d[], char* t){
-    for(int i = 0; i<sizeof(d)/sizeof(*d); i++){
-        println(toLowerCase(d[i]));
-        if(equals(toLowerCase(d[i]), toLowerCase(t))){
-            return true;
-        }
-        if(i == sizeof(d)/sizeof(*d)-1 && !equals(toLowerCase(d[i]), toLowerCase(t))){
-            return false;
-        }
-    }
-}
-
 
 int randint(int min, int max){ // to use this function properly, invoke *seed* (ONLY ONCE) in your main function before using it
     if(min >= max){
@@ -530,7 +513,7 @@ SOCKET createConnection(char * host, in_port_t port, _Bool showLog){
         return -1;
     }
     printf("Connected. With hostname: %s\n", host);
-    
+
     }else{
 
         WSADATA wsa;
