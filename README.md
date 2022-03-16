@@ -33,6 +33,8 @@ this Header is *almost* completely using ANSI C (standardized C)
 | function | array_t      | array_get_int   | int *     | get specific value of number element |
 | function | array_t      | array_remove    | void      | remove specific index of element |
 | function | array_t      | array_print     | void      | prints array to the console    |
+| function | array_t      | array_size      | int       | sizeof array element |
+| function | array_t      | array_destroy   | void      | destroy the given element and frees up RAM |
 | function | array_t      | array_set       | void      | change the specific index of element |
 | function | array_t      | array_set_int   | void      | has the same function to array_set, but it's for number element |
 | function | None         | tokenize        | array_t*  | split string into array of string tokens |
