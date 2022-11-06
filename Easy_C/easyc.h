@@ -1,14 +1,6 @@
 // WARNING! THIS HEADER IS FOR C ONLY! DO NOT INCLUDE THIS HEADER WITH C++
 // for C++ please use the .hpp version [Coming Soon]
-#if defined(__AUTHOR__)
-#undef __AUTHOR__
-#endif
-#if defined(__EASY_C_HEADER__)
-#undef __EASY_C_HEADER__
-#endif
-// above lines are important if __AUTHOR__ or __EASY_C_HEADER__ is defined in the current file
-#ifndef __AUTHOR__
-#define __AUTHOR__ "syaLikShreer"
+#define __AUTHOR "syaLikShreer"
 // above lines are unnecessary, you can delete it or modify it as you want
 // to delete it you need to remove '#endif' line at the very bottom of this file
 #include <stdio.h>
@@ -19,30 +11,6 @@
 #include <inttypes.h>
 #include <setjmp.h>
 #include <time.h>
-
-
-#ifdef _WIN32
-#include <WinSock2.h>
-#include <ws2def.h>
-#include <WS2tcpip.h>
-#include <Windows.h>
-#pragma comment(lib, "ws2_32.lib")
-#define OS "Windows"
-typedef uint16_t in_port_t;
-#else
-#include <netinet/tcp.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#define OS "Linux"
-#endif
-
-
-#ifndef __EASY_C_HEADER__
-#define __EASY_C_HEADER__ 1
-
 
 #define PRINTABLE_CHAR "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 #define ASCII "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -451,126 +419,4 @@ char * pwd(){
     getcwd(res, 100);
     return res;
 }
-#endif
-
-
-#if defined( _WIN32)
-
-char * getIP(char * hostname){
-    // start a WSA (Windows Socket API) initialization, coz this is windows basically you need to turn on
-    // the Socket support -.-
-    WSADATA wsaData;
-    WORD wVersionRequested = MAKEWORD(2, 2);
-    int err = WSAStartup(wVersionRequested, &wsaData);
-    if (err != 0) {
-        printf("WSAStartup failed with error: %d\n", err);
-        return NULL;
-    }
-
-    struct addrinfo *result = NULL;
-    struct addrinfo *ptr = NULL;
-    struct addrinfo hints;
-    int error;
-    char *ipstr;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    error = getaddrinfo(hostname, NULL, &hints, &result);
-    if(error != 0){
-        printf("getaddrinfo failed with error: %d\n", error);
-        return NULL;
-    }
-    ipstr = inet_ntoa(((struct sockaddr_in *)result->ai_addr)->sin_addr);
-    return ipstr;
-    }
-SOCKET createConnection(char * host, in_port_t port, _Bool showLog){
-    SOCKET so;
-    if(showLog){
-    WSADATA wsa;
-    struct sockaddr_in addr;
-    print("Starting Initialization for WSA...\n");
-    if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0){
-        printf("WSAStartup failed with error: %d\n", WSAGetLastError());
-        return -1;
-    }
-    print("Initialization for WSA done.\n");
-    print("Creating socket...\n");
-    so = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(so == INVALID_SOCKET){
-        printf("Socket creation failed with error: %d\n", WSAGetLastError());
-        return -1;
-    }
-    print("Socket created.\n");
-    print("Setting up address...\n");
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(getIP(host));
-    print("Address set.\n");
-    print("Connecting...\n");
-    if(connect(so, (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR){
-        printf("Connection failed with error: %d\n", WSAGetLastError());
-        return -1;
-    }
-    printf("Connected. With hostname: %s\n", host);
-
-    }else{
-
-        WSADATA wsa;
-    struct sockaddr_in addr;
-    if(WSAStartup(MAKEWORD(2, 2), &wsa) != 0){
-        printf("WSAStartup failed with error: %d\n", WSAGetLastError());
-        return -1;
-    }
-    so = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(so == INVALID_SOCKET){
-        printf("Socket creation failed with error: %d\n", WSAGetLastError());
-        return -1;
-    }
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(port);
-    addr.sin_addr.s_addr = inet_addr(getIP(host));
-    if(connect(so, (struct sockaddr *)&addr, sizeof(addr)) == SOCKET_ERROR){
-        printf("Connection failed with error: %d\n", WSAGetLastError());
-        return -1;
-    }
-
-    }
-    return so;
-}
-
-#else
-int createConnection(char * host, in_port_t port){
-    struct hostent *hp;
-    struct sockaddr_in server;
-    int on = 1, sock;
-    print("Creating socket...\n");
-    if((hp=gethostbyname(host))==NULL){
-        printf("%s: unknown host\n", host);
-        exit(1);
-    }
-    print("Copying Host...\n");
-    copy(hp->h_addr, &server.sin_addr, hp->h_length);
-    server.sin_port = htons(port);
-    server.sin_family = AF_INET;
-    sock = socket(AF_INET, SOCK_STREAM, 0);
-    setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof(int));
-    if(sock == -1){
-        printf("socket failed\n");
-        exit(1);
-    }
-    print("Connecting...\n");
-    if(connect(sock, (struct sockaddr *)&server, sizeof(struct sockaddr_in)) == -1){
-        printf("connect failed\n");
-        exit(1);
-    }
-    return sock;
-
-}
-
-
-#endif
-
-
-#endif
 #endif
