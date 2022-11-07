@@ -1,26 +1,21 @@
 // WARNING! THIS HEADER IS FOR C ONLY! DO NOT INCLUDE THIS HEADER WITH C++
 // for C++ please use the .hpp version [Coming Soon]
 #define __AUTHOR "syaLikShreer"
-// above lines are unnecessary, you can delete it or modify it as you want
-// to delete it you need to remove '#endif' line at the very bottom of this file
+#define __EASY_C_VERSION 2
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <setjmp.h>
 #include <time.h>
 
-#define PRINTABLE_CHAR "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
-#define ASCII "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define ALL "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+#define LETTERS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define ASCII_LOWER "abcdefghijklmnopqrstuvwxyz"
 #define ASCII_UPPER "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define SYMBOL "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 #define DIGITS "0123456789"
-#define LENGTH_PRINTABLE (strlen(PRINTABLE_CHAR))
-
-#define equals(X, Y)((strcmp(X, Y) == 0) ? true : false)
 #define typecheck(T) _Generic( (T), int: "integer", \
                               _Bool: "boolean", \
                               char*: "string",\
@@ -32,142 +27,7 @@
                               void *: "null", \
                                default: "unknown")
 
-jmp_buf ex_buf;
-#define try if(setjmp(ex_buf)==0)
-#define catch(x) else if(x)
-#define finally else
-#define throw(x) longjmp(ex_buf,x)
-
-typedef _Bool bools;
-typedef char* string;
-char * toLowerCase(char * t){
-   char me[] = "";
-    strcpy(me, t);
-  char res[] = "";
-  for(int i = 0; i <= strlen(t); i++)
-  {
-    //   printf("%c\n", me[i]);
-    res[i] = tolower(me[i]);
-  }
-  char * s = strdup(res);
-  return s;
-}
-char * toUpperCase(char * t){
-    char me[] = "";
-    strcpy(me, t);
-  char res[] = "";
-  for(int i = 0; i <= strlen(t); i++)
-  {
-    //   printf("%c\n", me[i]);
-    res[i] = toupper(me[i]);
-  }
-  char * s = strdup(res);
-    return s;
-}
-
-// start of array struct
-
-typedef struct{
-    void * data;
-    int length;
-    int capacity;
-    int elementSize;
-} array_t;
-array_t * array_new(int elementSize){
-    array_t * a = malloc(sizeof(array_t));
-    a->data = malloc(sizeof(elementSize));
-    a->length = 0;
-    a->capacity = 1;
-    a->elementSize = elementSize;
-    return a;
-}
-void * array_get(array_t * a, int index){
-    if(index < 0 || index >= a->length)
-        return NULL;
-    return (char *)a->data + index * a->elementSize;
-}
-void array_push(array_t * a, void * element){
-    if(a->length == a->capacity){
-        a->capacity *= 2;
-        a->data = realloc(a->data, a->capacity * a->elementSize);
-    }
-    memcpy((char *)a->data + a->length * a->elementSize, element, a->elementSize);
-    a->length++;
-}
-int array_size(array_t * a){
-    return a->length;
-}
-
-void array_destroy(array_t * a){
-    free(a->data);
-    free(a);
-}
-
-int array_get_int(array_t * a, int index){
-    if(index < 0 || index >= a->length)
-        return 0;
-    return (int)strtol(array_get(a, index), (char **)NULL, 10);
-}
-
-void array_remove(array_t * a, int index){
-    if(index < 0 || index >= a->length)
-        return;
-    for(int i = index; i < a->length - 1; i++){
-        memcpy((char *)a->data + i * a->elementSize, (char *)a->data + (i + 1) * a->elementSize, a->elementSize);
-    }
-    a->length--;
-}
-
-void array_insert(array_t * a, int index, void * element){
-    if(index < 0 || index >= a->length)
-        return;
-    if(a->length == a->capacity){
-        a->capacity *= 2;
-        a->data = realloc(a->data, a->capacity * a->elementSize);
-    }
-    for(int i = a->length; i > index; i--){
-        memcpy((char *)a->data + (i + 1) * a->elementSize, (char *)a->data + i * a->elementSize, a->elementSize);
-    }
-    memcpy((char *)a->data + index * a->elementSize, element, a->elementSize);
-    a->length++;
-}
-
-void array_print(array_t * a){
-    printf("[");
-    for(int i = 0; i < a->length; i++){
-        if(i != 0)
-            printf(", ");
-         printf("%s", array_get(a, i));
-    }
-    printf("]");
-}
-void array_set(array_t * a, int index, void * element){
-    if(index < 0 || index >= a->length)
-        return;
-    memcpy((char *)a->data + index * a->elementSize, element, a->elementSize);
-}
-void array_set_int(array_t * a, int index, int value){
-    if(index < 0 || index >= a->length)
-        return;
-    char * s = malloc(sizeof(int));
-    sprintf(s, "%d", value);
-    array_set(a, index, s);
-    free(s);
-}
-
-// end of array struct
-
-array_t* tokenize(char* s, char* delim){
-    array_t * a = array_new(sizeof(string));
-    char *token = (char *)malloc(sizeof(char) * 100);
-        strcpy(token, s);
-        char *tok = strtok(token, delim);
-        while(tok != NULL){
-                array_push(a, tok);
-                tok = strtok(NULL, delim);
-        }
-    return a;
-}
+// Begin Print macro
 
 void printString(char * arg){
     printf("%s", arg);
@@ -194,7 +54,7 @@ void printFloat(float arg){
     printf("%f",arg);
 }
 
-
+// Uses generic template to fulfill template
 #define print(X) _Generic((X), int: printInt, \
                               _Bool: printBool, \
                               char*: printString,\
@@ -239,131 +99,34 @@ void printFloatln(float arg){
                               size_t: printIntln, \
                                default: printNoneln)(X)
 
-char * concat(char * t, char * c){
-    // allocate memory for the result
-    char *result = (char *)malloc(strlen(t) + strlen(c) + 1);
-    strcpy(result, t);
-    strcat(result, c);
-    return result;
-}
+// End print macro
 
-char * input(char * text){
-    char * res = (char *)malloc(sizeof(char) * 100);
-    printf("%s", text);
-    scanf("%s", res);
-    return res;
-}
-
-
-char * intToString(int number){
-    char * res = (char *)malloc(sizeof(char) * 10);
-    sprintf(res, "%d", number);
-    return res;
-}
-
-char * doubleToString(double number){
-    char * res = (char *)malloc(sizeof(char) * 10);
-    sprintf(res, "%lf", number);
-    return res;
-}
-
-char * floatToString(float number){
-    char * res = (char *)malloc(sizeof(char) * 10);
-    sprintf(res, "%f", number);
-    return res;
-}
-
-#define toString(X) _Generic((X), int: intToString, double: doubleToString, float: floatToString, uint16_t: intToString,\
-unsigned int: intToString,\
- default: "unknown")(X)
-
-int toInt(char * arg){
-    int res = atoi(arg);
-    return res;
-}
-
-double toDouble(char * arg){
-    double res = atof(arg);
-    return res;
-}
-
-float toFloat(char * arg){
-    float res = atof(arg);
-    return res;
-}
-void writeFile(char * filename, char * text, _Bool append){
-    if(append){
-    FILE * fp = fopen(filename, "a");
-    fprintf(fp, "%s", text);
-    fclose(fp);
-    // free(fp);
-    }else{
-    FILE * fp = fopen(filename, "w");
-    fprintf(fp, "%s", text);
-    fclose(fp);
-    // free(fp);
+// returns lowered string, stored in heap [heap]
+char* strtolwr(char* str){
+    char res[strlen(str)];
+    size_t size = strlen(str);
+    for(int i = 0; i < size; i++){
+        char get = str[i];
+        char lwred = tolower(get);
+        res[i] = lwred;
     }
+    res[size] = '\0';
+    return strdup(res);
 }
-
-
-char * readFile(char * filename){
-    FILE * fp = fopen(filename, "r");
-    char * res = (char *)malloc(sizeof(char) * 100);
-    fgets(res, 100, fp);
-    fclose(fp);
-    return res;
-}
-
-void writeBinary(char * filename, char * text, _Bool append){
-    if(append){
-    FILE * fp = fopen(filename, "ab");
-    fprintf(fp, "%s", text);
-    fclose(fp);
-    free(fp);
-    }else{
-    FILE * fp = fopen(filename, "wb");
-    fprintf(fp, "%s", text);
-    fclose(fp);
-    free(fp);
+// returns upper string, stored in heap [heap]
+char* strtoupper(char* str){
+    char res[strlen(str)];
+    size_t size = strlen(str);
+    for(int i = 0; i < size; i++){
+        char get = str[i];
+        char lwred = toupper(get);
+        res[i] = lwred;
     }
-}
-char * readBinary(char * filename){
-    FILE * fp = fopen(filename, "rb");
-    char * res = (char *)malloc(sizeof(char) * 100);
-    fread(res, 1, 100, fp);
-    fclose(fp);
-    return res;
+    res[size] = '\0';
+    return strdup(res);
 }
 
-void readEOF(char * filename, void(*callback)(char *), _Bool binary){
-    FILE * fp;
-    if(binary){
-    fp = fopen(filename, "rb");
-    char line[2048]= ""; // change the size of this array to allow more characters, as long it's not above allowed C numbers and must be unsigned
-    while(fgets(line, sizeof(line), fp)){
-        callback(line);
-    }
-    }else{
-    fp = fopen(filename, "r");
-    char line[2048]= ""; // change the size of this array to allow more characters, as long it's not above allowed C numbers and must be unsigned
-    while(fgets(line, sizeof(line), fp)){
-        callback(line);
-    }
-    }
-    fclose(fp);
-}
-
-int file_line(char * filename){
-    unsigned int line_count = 0;
-    FILE* fp = fopen(filename, "r");
-    char line[2048]= ""; // change the size of this array to allow more characters, as long it's not above allowed C numbers and must be unsigned
-    while(fgets(line, sizeof(line), fp)){
-        line_count++;
-    }
-    fclose(fp);
-    return line_count;
-}
-
+// replaces string if found [heap]
 char * repstr(char * text, char * old, char * newstr){
     char * res = (char *)malloc(sizeof(char) * 100);
     strcpy(res, text);
@@ -375,8 +138,8 @@ char * repstr(char * text, char * old, char * newstr){
     }
     return res;
 }
-
-int randint(int min, int max){ // to use this function properly, invoke *seed* (ONLY ONCE) in your main function before using it
+// generates pseudo-random number and then add to min-max (seed call is required)
+int randint(int min, int max){
     if(min >= max){
         int temp = min;
         min = max;
@@ -386,7 +149,8 @@ int randint(int min, int max){ // to use this function properly, invoke *seed* (
     return res;
 }
 void seed(){srand(time(NULL));}
-char * randstr(char* str,int length){ // to use this function properly, invoke *seed* (ONLY ONCE) in your main function before using it
+// generates pseudo-random string based on length specified (seed call is required) [heap]
+char * randstr(char* str,int length){ 
     char * res = (char *)malloc(sizeof(char) * length);
     for(int i = 0; i<length; i++){
         res[i] = str[randint(0, strlen(str))];
@@ -396,27 +160,177 @@ char * randstr(char* str,int length){ // to use this function properly, invoke *
     }
     return res;
 }
-char* randstrOptimize(char* str, int length, int min,int max){ // to use this function properly, invoke *seed* (ONLY ONCE) in your main function before using it
-    char * res = (char *)malloc(sizeof(char) * length);
-    for(int i = 0; i<length; i++){
-        res[i] = str[randint(min, max)];
-        if(i == length-1){
-            res[i+1] = '\0';
-        }
+
+// unsafe functions by default are locked because of possible NULL return and low-level management
+#ifdef UNSAFE_LOCK
+// start of array struct
+
+typedef struct{
+    void * data;
+    int length;
+    int capacity;
+    int elementSize;
+} array_t;
+array_t * array_new(int elementSize){
+    array_t * a = malloc(sizeof(array_t));
+    a->data = malloc(sizeof(elementSize));
+    a->length = 0;
+    a->capacity = 1;
+    a->elementSize = elementSize;
+    return a;
+}
+void * array_get(array_t * a, int index){
+    if(index < 0 || index >= a->length)
+        return NULL;
+    return (char *)a->data + index * a->elementSize;
+}
+void array_push(array_t * a, void * element){
+    if(a->length == a->capacity){
+        a->capacity *= 2;
+        a->data = realloc(a->data, a->capacity * a->elementSize);
     }
-    return res;
+    memcpy((char *)a->data + a->length * a->elementSize, element, a->elementSize);
+    a->length++;
 }
 
-#ifdef _WIN32
-char* pwd(){
-    char * res = (char *)malloc(sizeof(char) * 100);
-    GetCurrentDirectory(100, res);
-    return res;
+void array_destroy(array_t * a){
+    free(a->data);
+    free(a);
 }
-#else
-char * pwd(){
-    char * res = (char *)malloc(sizeof(char) * 100);
-    getcwd(res, 100);
-    return res;
+
+int array_get_int(array_t * a, int index){
+    if(index < 0 || index >= a->length)
+        return 0;
+    return (int)strtol(array_get(a, index), (char **)NULL, 10);
 }
+
+void array_remove(array_t * a, int index){
+    if(index < 0 || index >= a->length)
+        return;
+    for(int i = index; i < a->length - 1; i++){
+        memcpy((char *)a->data + i * a->elementSize, (char *)a->data + (i + 1) * a->elementSize, a->elementSize);
+    }
+    a->length--;
+}
+
+void array_insert(array_t * a, int index, void * element){
+    if(index < 0 || index >= a->length)
+        return;
+    if(a->length == a->capacity){
+        a->capacity *= 2;
+        a->data = realloc(a->data, a->capacity * a->elementSize);
+    }
+    for(int i = a->length; i > index; i--){
+        memcpy((char *)a->data + (i + 1) * a->elementSize, (char *)a->data + i * a->elementSize, a->elementSize);
+    }
+    memcpy((char *)a->data + index * a->elementSize, element, a->elementSize);
+    a->length++;
+}
+
+void array_print(array_t * a){
+    printf("[");
+    for(int i = 0; i < a->length; i++){
+        if(i != 0)
+            printf(", ");
+         printf("%s", (char*)array_get(a, i));
+    }
+    printf("]");
+}
+void array_set(array_t * a, int index, void * element){
+    if(index < 0 || index >= a->length)
+        return;
+    memcpy((char *)a->data + index * a->elementSize, element, a->elementSize);
+}
+void array_set_int(array_t * a, int index, int value){
+    if(index < 0 || index >= a->length)
+        return;
+    char * s = malloc(sizeof(int));
+    sprintf(s, "%d", value);
+    array_set(a, index, s);
+    free(s);
+}
+
+// end of array struct
+
+
+// begin of map
+
+// data lists for map
+typedef struct{
+    char* key;
+    void* value;
+} data_list;
+
+// map type, utilizes heap storage for use
+typedef struct{
+    data_list* data;
+    size_t size;
+    int elemSize;
+} map_t;
+
+// initializes empty map
+map_t* map_new(int elemSize){
+    map_t* map;
+    map = malloc(sizeof(map_t));
+
+    map->size = 0;
+    map->data = NULL;
+    map->elemSize = elemSize;
+    return map;
+}
+
+// insert value to map, value can only store string for now.
+void map_insert(map_t* mp, char* key, void* value){
+    char* nkey = (char*)malloc(strlen(key)+1);
+    strcpy(nkey, key);
+
+    if(mp->size == 0){
+        mp->data = malloc(sizeof(data_list));
+        mp->data->key = nkey;
+        mp->data->value = value;
+        mp->size++;
+    }else{
+        mp->data = realloc(mp->data, sizeof(data_list) * (mp->size + 1));
+        (mp->data + mp->size)->key = nkey;
+        (mp->data + mp->size)->value = value;
+        mp->size++;
+    }
+}
+
+// get map data by index (useful for iterator)
+void* map_get(map_t* mp, size_t index){
+    if(index > mp->size)
+        return NULL;
+    return (mp->data + index)->value;
+}
+
+// get map by keyname (useful if index is unknown)
+void* map_find(map_t* mp, char* key){
+    for(size_t i = 0; i < mp->size; i++){
+        if(strcmp((mp->data + i)->key, key) == 0){
+            return (mp->data + i)->value;
+        }
+    }
+    return NULL;
+}
+
+
+// frees heap from map
+void map_destroy(map_t* mp){
+    for(size_t i = 0; i < mp->size; i++){
+        free((mp->data + i)->value);
+        free((mp->data + i)->key);
+    }
+    free(mp->data);
+    free(mp);
+}
+
+// end of map
+
+/*
+(for security reason, strcasecmp is not safe because usage of strtolower which uses heap.)
+Compare 2 strings ignoring case
+*/
+#define strcasecmp(X, Y) (strcmp(strtolwr(X), strtolwr(Y))) == 0
+
 #endif
