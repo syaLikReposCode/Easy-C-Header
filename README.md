@@ -16,7 +16,7 @@ this project was licensed under the terms of MIT License
 this Header targets for simplicity and ease-of-use for your programs (NOTE: this is for **C ONLY**, do not try include this header on C++ code)
 
 # Version
-this Header still in Alpha builds, there might be some of bugs and complexity on using functions, i'm gonna improve that later
+header currently version 2 alpha
 
 # Written
 this Header is *almost* completely using ANSI C (standardized C)
