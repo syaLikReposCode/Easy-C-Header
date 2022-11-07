@@ -41,6 +41,7 @@ this Header is *almost* completely using ANSI C (standardized C)
 | Macro Constant | base     | ASCII_LOWER     | none      | lowercase of ascii_upper |
 | Macro Constant | base     | DIGITS          | none      | printable digits         |
 | Macro Constant | base     | SYMBOL          | none      | punctuation              |
+| Macro Constant | base     | strcasecmp      | _Bool     | compares 2 string ignoring the case |
 
 **[UNSAFE TYPE (need UNSAFE_LOCK macro to access)]**
 | Name Type  | Child of     | Defined Name    | Returns   | functionality   |
