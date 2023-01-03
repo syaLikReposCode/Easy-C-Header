@@ -75,7 +75,8 @@ makes `data_list` an independent-type: `pair_t` and it's member child.
 
 Renamed **UNSAFE_LOCK** block to **STRUCTS**.
 
-Revised println and print macro
-(CHANGE: void* no longer returns "null", "memory" is returned instead, char* now returns "char_memory")
+Revised println and print macro (CHANGE: void* by default be casted as char memory)
+
+Revised typecheck macro (CHANGE: void* no longer returns "null", "memory" is returned instead, char* now returns "char_memory")
 
 Completed Map Functionality.
