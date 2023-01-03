@@ -1,7 +1,7 @@
 // WARNING! THIS HEADER IS FOR C ONLY! DO NOT INCLUDE THIS HEADER WITH C++
 // for C++ please use the .hpp version [Coming Soon]
-#define __AUTHOR "syaLikShreer"
-#define __EASY_C_VERSION 2
+#define AUTHOR "syaLikShreer"
+#define EASY_C_VERSION "2.2a"
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -18,13 +18,13 @@
 #define DIGITS "0123456789"
 #define typecheck(T) _Generic( (T), int: "integer", \
                               _Bool: "boolean", \
-                              char*: "string",\
+                              char*: "char_memory",\
                               char: "character", \
                               double: "double", \
                               float: "float", \
                               long: "long",\
                               short: "short", \
-                              void *: "null", \
+                              void*: "memory", \
                                default: "unknown")
 
 // Begin Print macro
@@ -54,6 +54,10 @@ void printFloat(float arg){
     printf("%f",arg);
 }
 
+void printMemory(void* arg){
+    printf("%s", (char*)arg);
+}
+
 // Uses generic template to fulfill template
 #define print(X) _Generic((X), int: printInt, \
                               _Bool: printBool, \
@@ -63,6 +67,7 @@ void printFloat(float arg){
                               long double: printLongDb, \
                               float: printFloat, \
                               size_t: printInt, \
+                                void*: printMemory, \
                                default: printNone)(X)
 void printStringln(char * arg){
     printf("%s\n", arg);
@@ -88,6 +93,9 @@ void printLongDbln(long double arg){
 void printFloatln(float arg){
     printf("%f\n",arg);
 }
+void printMemoryLn(void* arg){
+    printf("%s\n", (char*)arg);
+}
 
 #define println(X) _Generic((X), int: printIntln, \
                               _Bool: printBoolln, \
@@ -97,33 +105,30 @@ void printFloatln(float arg){
                               long double: printLongDbln, \
                               float: printFloatln, \
                               size_t: printIntln, \
+                              void*: printMemoryLn, \
                                default: printNoneln)(X)
 
-// End print macro
+bool b = false;
 
 // returns lowered string, stored in heap [heap]
-char* strtolwr(char* str){
-    char res[strlen(str)];
-    size_t size = strlen(str);
-    for(int i = 0; i < size; i++){
-        char get = str[i];
-        char lwred = tolower(get);
-        res[i] = lwred;
+char* strtolower(char* str){
+    char* res = (char*)malloc(strlen(str) + 1);
+    strcpy(res, "");
+    for(int i = 0; i < strlen(str); i++){
+        res[i] = tolower(str[i]);
     }
-    res[size] = '\0';
-    return strdup(res);
+    res[strlen(str)] = '\0';
+    return res;
 }
 // returns upper string, stored in heap [heap]
 char* strtoupper(char* str){
-    char res[strlen(str)];
-    size_t size = strlen(str);
-    for(int i = 0; i < size; i++){
-        char get = str[i];
-        char lwred = toupper(get);
-        res[i] = lwred;
+    char* res = (char*)malloc(strlen(str) + 1);
+    strcpy(res, "");
+    for(int i = 0; i < strlen(str); i++){
+        res[i] = toupper(str[i]);
     }
-    res[size] = '\0';
-    return strdup(res);
+    res[strlen(str)] = '\0';
+    return res;
 }
 
 // replaces string if found [heap]
@@ -161,8 +166,18 @@ char * randstr(char* str,int length){
     return res;
 }
 
-// unsafe functions by default are locked because of possible NULL return and low-level management
-#ifdef UNSAFE_LOCK
+// compares 2 string ignoring case
+int strcmpcase(char* st1, char* st2){
+    char* lw = strtolower(st1);
+    char* l2w = strtolower(st2);
+    int cmp = strcmp(lw, l2w);
+    free(lw);
+    free(l2w);
+    return cmp;
+}
+
+
+#ifdef STRUCTS
 // start of array struct
 
 typedef struct{
@@ -253,84 +268,94 @@ void array_set_int(array_t * a, int index, int value){
 // end of array struct
 
 
-// begin of map
-
-// data lists for map
+// independent-type pair.
 typedef struct{
     char* key;
     void* value;
-} data_list;
+} pair_t;
+
+pair_t* pair_make(char* key, void* value){
+    pair_t* pair = (pair_t*)malloc(sizeof(pair_t));
+    pair->key = malloc(strlen(key) + 1);
+    pair->value = malloc(strlen(value));
+    strcpy(pair->key, key);
+    memcpy(pair->value, value, strlen(value));
+    return pair;
+}
+
+void pair_destroy(pair_t* pair){
+    free(pair->key);
+    free(pair->value);
+    free(pair);
+}
+
+// begin of map
 
 // map type, utilizes heap storage for use
 typedef struct{
-    data_list* data;
+    pair_t** data;
     size_t size;
-    int elemSize;
 } map_t;
 
 // initializes empty map
-map_t* map_new(int elemSize){
+map_t* map_new(){
     map_t* map;
     map = malloc(sizeof(map_t));
 
     map->size = 0;
     map->data = NULL;
-    map->elemSize = elemSize;
     return map;
 }
 
-// insert value to map, value can only store string for now.
+// inserts new element to the map
 void map_insert(map_t* mp, char* key, void* value){
-    char* nkey = (char*)malloc(strlen(key)+1);
-    strcpy(nkey, key);
-
-    if(mp->size == 0){
-        mp->data = malloc(sizeof(data_list));
-        mp->data->key = nkey;
-        mp->data->value = value;
-        mp->size++;
-    }else{
-        mp->data = realloc(mp->data, sizeof(data_list) * (mp->size + 1));
-        (mp->data + mp->size)->key = nkey;
-        (mp->data + mp->size)->value = value;
-        mp->size++;
-    }
+    if(mp->size == 0)
+        mp->data = malloc(sizeof(pair_t));
+    else
+        mp->data = realloc(mp->data, sizeof(pair_t) * (mp->size + 1));
+    
+    mp->data[mp->size++] = pair_make(key, value);
 }
 
-// get map data by index (useful for iterator)
-void* map_get(map_t* mp, size_t index){
-    if(index > mp->size)
-        return NULL;
-    return (mp->data + index)->value;
-}
-
-// get map by keyname (useful if index is unknown)
-void* map_find(map_t* mp, char* key){
+// get map index by key (used on map_set and map_find)
+long map_index(map_t* mp, char* k){
     for(size_t i = 0; i < mp->size; i++){
-        if(strcmp((mp->data + i)->key, key) == 0){
-            return (mp->data + i)->value;
+        if(strcmp(k, mp->data[i]->key) == 0){
+            return i;
         }
     }
-    return NULL;
+    return -2;
 }
 
+// retrieves map data by index (faster than map_find)
+void* map_get(map_t* mp, size_t idx){
+    if(idx >= mp->size)return NULL;
+    return mp->data[idx]->value;
+}
 
-// frees heap from map
+// retrieves map data by key
+void* map_find(map_t* mp, char* key){
+    size_t idx = map_index(mp, key);
+    if(idx == -2)return NULL;
+    return mp->data[idx]->value;
+}
+
+void map_set(map_t* mp, char* key, void* nval){
+    size_t idx = map_index(mp, key);
+    if(idx == -2)return;
+    mp->data[idx]->value = realloc(mp->data[idx]->value, sizeof(pair_t) * strlen(nval));
+    memcpy(mp->data[idx]->value, nval, strlen(nval));
+}
+
+// destroy map and it's data
 void map_destroy(map_t* mp){
     for(size_t i = 0; i < mp->size; i++){
-        free((mp->data + i)->value);
-        free((mp->data + i)->key);
+        pair_destroy(mp->data[i]);
     }
     free(mp->data);
     free(mp);
 }
 
 // end of map
-
-/*
-(for security reason, strcasecmp is not safe because usage of strtolower which uses heap.)
-Compare 2 strings ignoring case
-*/
-#define strcasecmp(X, Y) (strcmp(strtolwr(X), strtolwr(Y))) == 0
 
 #endif
