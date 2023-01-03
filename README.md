@@ -29,7 +29,7 @@ this Header is *almost* completely using ANSI C (standardized C)
 | Macro Generic | base      | typecheck       | char*     | checks type data |
 | Macro Generic | base      | print           | none      | prints with type inference |
 | Macro Generic | base      | println         | none      | like print but it adds newline |
-| function   |  base        | strtolwr        | char*     | makes string to lower |
+| function   |  base        | strtolower      | char*     | makes string to lower |
 | function   |  base        | strtoupper      | char*     | reverse strtolwr |
 | function   |  base        | repstr          | char*     | replace found string with new string|
 | function   |  base        | randint         | int       | generates pseudo-random int (seed call required) |
@@ -74,5 +74,8 @@ made strcasecmp to strcmpcase and now memory-safe.
 makes `data_list` an independent-type: `pair_t` and it's member child.
 
 Renamed **UNSAFE_LOCK** block to **STRUCTS**.
+
+Revised println and print macro
+(CHANGE: void* no longer returns "null", "memory" is returned instead, char* now returns "char_memory")
 
 Completed Map Functionality.
