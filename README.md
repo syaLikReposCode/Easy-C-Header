@@ -79,3 +79,5 @@ this Header is *almost* completely using ANSI C (standardized C)
 Added map_delete  and map_delete_id, now can print map.
 
 Added iterator structure.
+
+Added stack-based memory creation for pair
