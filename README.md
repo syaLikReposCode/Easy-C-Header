@@ -21,7 +21,7 @@ header currently version 2.4 alpha
 # Written
 this Header is *almost* completely using ANSI C (standardized C)
 
-# Functions and Typedefs
+# Functions, Parameters and Typedefs
 **[NON-STRUCT TYPE]**
 
 | Name Type  | Child of     | Defined Name    | Returns   | functionality   |
@@ -75,6 +75,55 @@ this Header is *almost* completely using ANSI C (standardized C)
 | function   | map_t        | map_delete      | void       | delete key from map |
 | function   | map_t        | map_delete_id   | void       | delete index from map |
 | function   | base         | destroy         | void       | placeholder if the data is not registered in destroy macro |
+
+**[FUNCTION PARAMETERS]**
+| Defined Name      |         Parameters             |
+| :---------------: | :----------------------------: |
+| typecheck         | Generic Template               |
+| print & println   | Generic  Template              |
+| strtolower        | char* str                      |
+| strtoupper        | char* str                      |
+| repstr            | char* str, char* f, char* n    |
+| seed              | None (void)                    |
+| randint           | int min, int m                 |
+| randstr           | char* sup, int len             |
+| strcmpcase        | char* s1, int s2               |
+| kernel_name       | None (void)                    |
+| kernel_name       | None (void)                    |
+| next_default      | iterator_t* it                 |
+| has_next_default  | iterator_t it                  |
+| create_default    | Generic Template               |
+| create_default    | Generic Template               |
+| array_new         | int elementSize                |
+| array_get         | array_t* this, int idx         |
+| array_push        | array_t* this, void* elem      |
+| destroy (array)   | array_t* this                  |
+| array_get_int     | array_t* this, int idx         |
+| array_remove      | array_t* this, int idx         |
+| array_insert      | array_t* a, int idx, void* e   |
+| array_print       | array_t* this                  |
+| array_set         | array_t* th, int idx, void* e  |
+| array_set_int     | array_t* th, int idx, int el   |
+| pair_make         | char* key, void* value         |
+| pair_create       | char* key, void* value         |
+| destroy (pair)    | pair_t* this                   |
+| map_new           | None (void)                    |
+| next (map_t)      | iterator_t* instance           |
+| has_next (map_t)  | iterator_t instance            |
+| create (map_t)    | map_t* instance                |
+| map_insert        | map_t* this, char* k, void* v  |
+| map_index         | map_t* this, char* key         |
+| map_index         | map_t* this, char* key         |
+| map_get           | map_t* this, size_t idx        |
+| map_find          | map_t* this, char* k           |
+| map_set           | map_t* this, char* k, void* nv |
+| map_print         | map_t* this                    |
+| map_move          | map_t* mp, size_t i, size_t j  |
+| map_delete_id     | map_t* this, size_t i          |
+| map_delete        | map_t* this, char* k           |
+| destroy (map_t)   | map_t* this                    |
+| destroy (base)    | None (void)                    |
+
 
 # News
 Added map_delete  and map_delete_id, now can print map.
