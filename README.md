@@ -16,7 +16,7 @@ this project was licensed under the terms of MIT License
 this Header targets for simplicity and ease-of-use for your programs (NOTE: this is for **C ONLY**, do not try include this header on C++ code)
 
 # Version
-header currently version 2.2 alpha
+header currently version 2.4 alpha
 
 # Written
 this Header is *almost* completely using ANSI C (standardized C)
