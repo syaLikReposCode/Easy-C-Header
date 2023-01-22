@@ -71,6 +71,7 @@ this Header is *almost* completely using ANSI C (standardized C)
 | function   | map_t        | map_find        | void*      | get element by keyname |
 | function   | map_t        | map_set         | void       | set new value to key |
 | function   | map_t        | destroy         | void       | destroy map from heap |
+| function   | map_t        | map_print       | void       | prints map in JSON format |
 | function   | map_t        | map_delete      | void       | delete key from map |
 | function   | map_t        | map_delete_id   | void       | delete index from map |
 | function   | base         | destroy         | void       | placeholder if the data is not registered in destroy macro |
