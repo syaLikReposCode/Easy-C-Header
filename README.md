@@ -16,12 +16,12 @@ this project was licensed under the terms of MIT License
 this Header targets for simplicity and ease-of-use for your programs (NOTE: this is for **C ONLY**, do not try include this header on C++ code)
 
 # Version
-header currently version 2.4 alpha
+header currently version 2.2 alpha
 
 # Written
 this Header is *almost* completely using ANSI C (standardized C)
 
- Functions and Typedefs
+# Functions and Typedefs
 **[NON-STRUCT TYPE]**
 
 | Name Type  | Child of     | Defined Name    | Returns   | functionality   |
@@ -76,14 +76,6 @@ this Header is *almost* completely using ANSI C (standardized C)
 | function   | base         | destroy         | void       | placeholder if the data is not registered in destroy macro |
 
 # News
-made strcasecmp to strcmpcase and now memory-safe.
+Added map_delete  and map_delete_id, now can print map.
 
-makes `data_list` an independent-type: `pair_t` and it's member child.
-
-Renamed **UNSAFE_LOCK** block to **STRUCTS**.
-
-Revised println and print macro (CHANGE: void* by default be casted as char memory)
-
-Revised typecheck macro (CHANGE: void* no longer returns "null", "memory" is returned instead, char* now returns "char_memory")
-
-Completed Map Functionality.
+Added iterator structure.
