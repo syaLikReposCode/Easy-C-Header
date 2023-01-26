@@ -1,6 +1,10 @@
 // WARNING! THIS HEADER IS FOR C ONLY! DO NOT INCLUDE THIS HEADER WITH C++
+// for C++ please use the .hpp version [Coming Soon]
+#ifndef _EASY_C_HEADER // checks if the header is not included yet
+
+#define _EASY_C_HEADER 1
 #define AUTHOR "syaLikShreer"
-#define EASY_C_VERSION "2.4a"
+#define EASY_C_VERSION "1.0b"
 // standard library import
 #include <stdio.h>
 #include <stdbool.h>
@@ -8,7 +12,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
-#include <stdarg.h>
 #include <time.h>
 
 #define ALL "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
@@ -17,8 +20,23 @@
 #define ASCII_UPPER "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define SYMBOL "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 #define DIGITS "0123456789"
+#ifdef _EXT_COROUTINES
 #define typecheck(T) _Generic( (T), int: "integer", \
-                              _Bool: "boolean", \
+                              bool: "boolean", \
+                              char*: "char_memory",\
+                              char: "character", \
+                              double: "double", \
+                              float: "float", \
+                              long: "long",\
+                              short: "short", \
+                              void*: "memory", \
+                              map_t*: "map",\
+                              array_t*: "array",\
+                              coroutine_t*: "task", \
+                               default: "unknown")
+#elif defined(STRUCTS)
+#define typecheck(T) _Generic( (T), int: "integer", \
+                              bool: "boolean", \
                               char*: "char_memory",\
                               char: "character", \
                               double: "double", \
@@ -29,8 +47,20 @@
                               map_t*: "map",\
                               array_t*: "array",\
                                default: "unknown")
-
-
+#else
+#define typecheck(T) _Generic( (T), int: "integer", \
+                              bool: "boolean", \
+                              char*: "char_memory",\
+                              char: "character", \
+                              double: "double", \
+                              float: "float", \
+                              long: "long",\
+                              short: "short", \
+                              void*: "memory", \
+                              map_t*: "map",\
+                              array_t*: "array",\
+                               default: "unknown")
+#endif
 // Begin Print macro
 
 void printString(char * arg){
@@ -42,11 +72,11 @@ void printInt(int arg){
 void printChar(char arg){
     printf("%c", arg);
 }
-void printBool(_Bool arg){
+void printBool(bool arg){
     printf("%s", (arg) ? "true" : "false");
 }
-void printNone(void){
-    printf("%s", "");
+void printNone(){
+    printf("");
 }
 void printDouble(double arg){
     printf("%lf", arg);
@@ -63,12 +93,29 @@ void printLong(long long b){
 }
 
 void printMemory(void* arg){
-    printf("%s", (char*)arg);
+    printf("%p", (char*)arg);
 }
 
+#ifdef STRUCTS
 // Uses generic template to fulfill template
 #define print(X) _Generic((X), int: printInt, \
-                              _Bool: printBool, \
+                              bool: printBool, \
+                              char*: printString,\
+                              char: printChar, \
+                              double: printDouble, \
+                              long double: printLongDb, \
+                              long long: printLong, \
+                              long: printLong, \
+                              float: printFloat, \
+                              size_t: printInt, \
+                                void*: printMemory, \
+                                array_t*: array_print, \
+                                map_t*: map_print, \
+                               default: printNone)(X)
+#else
+// Uses generic template to fulfill template
+#define print(X) _Generic((X), int: printInt, \
+                              bool: printBool, \
                               char*: printString,\
                               char: printChar, \
                               double: printDouble, \
@@ -79,6 +126,7 @@ void printMemory(void* arg){
                               size_t: printInt, \
                                 void*: printMemory, \
                                default: printNone)(X)
+#endif
 void printStringln(char * arg){
     printf("%s\n", arg);
 }
@@ -88,7 +136,7 @@ void printIntln(int arg){
 void printCharln(char arg){
     printf("%c\n", arg);
 }
-void printBoolln(_Bool arg){
+void printBoolln(bool arg){
     printf("%s\n", (arg) ? "true" : "false");
 }
 void printNoneln(void){
@@ -107,11 +155,27 @@ void printLongln(long long arg){
     printf("%lld\n", arg);
 }
 void printMemoryLn(void* arg){
-    printf("%s\n", (char*)arg);
+    printf("%p\n", (char*)arg);
 }
 
+#ifdef STRUCTS
 #define println(X) _Generic((X), int: printIntln, \
-                              _Bool: printBoolln, \
+                              bool: printBoolln, \
+                              char*: printStringln,\
+                              char: printCharln, \
+                              double: printDoubleln, \
+                              long double: printLongDbln, \
+                              long long: printLongln, \
+                              long: printLongln, \
+                              float: printFloatln, \
+                              size_t: printIntln, \
+                              void*: printMemoryLn, \
+                              map_t*: map_println, \
+                              array_t*: array_println, \
+                               default: printNoneln)(X)
+#else
+#define println(X) _Generic((X), int: printIntln, \
+                              bool: printBoolln, \
                               char*: printStringln,\
                               char: printCharln, \
                               double: printDoubleln, \
@@ -122,8 +186,8 @@ void printMemoryLn(void* arg){
                               size_t: printIntln, \
                               void*: printMemoryLn, \
                                default: printNoneln)(X)
+#endif
 
-bool b = false;
 
 // returns lowered string, stored in heap [heap]
 char* strtolower(char* str){
@@ -191,12 +255,14 @@ int strcmpcase(char* st1, char* st2){
     return cmp;
 }
 
-// returns an kernel_name, "darwin" for mac, "linux" for linux, "nt" for a fallback option (any os)
-// "any" is rarely returned
+// returns a kernel name in a heap memory
 char* kernel_name(){
     int code = system("uname -s > os.txt");
     if(code != 0){
-        return "nt";
+        code = system("schtasks /? > os.txt");
+        if(remove("os.txt") != 0)fprintf(stderr, "Output of os.txt cannot be deleted continuing...");
+        if(!code)return "nt";
+        return "any";
     }
     int size = 1;
     FILE* fp = fopen("os.txt", "r");
@@ -205,25 +271,16 @@ char* kernel_name(){
         c = fgetc(fp);
         size++;
     }
-    if(fseek(fp, 0, SEEK_SET) != 0){
-        fprintf(stderr, "fail to fetch kernel_name, cursor cannot be moved\n");
-        return NULL;
-    }
+    rewind(fp);
     char* g = (char*)calloc(size+1, sizeof(char));
     fgets(g, size, fp);
     fclose(fp);
     if(remove("os.txt") != 0){
         fprintf(stderr, "Output of os.txt cannot be deleted continuing...");
     }
-    if(strcmpcase(g, "darwin") == 0){
-        free(g);
-        return "darwin";
-    }else if(strcmpcase(g, "linux") == 0){
-        free(g);
-        return "linux";
-    }
+    char* getlwr = strtolower(g);
     free(g);
-    return "any";
+    return getlwr;
 }
 
 
@@ -250,6 +307,8 @@ iterator_t iterator_create_default(void){
     it.group = NULL;
     it.pos = 0;
     it.value = NULL;
+    it.next = iterator_next_default;
+    it.has_next = iterator_has_next_default;
     return it;
 }
 
@@ -325,6 +384,10 @@ void array_print(array_t * a){
          printf("%s", (char*)array_get(a, i));
     }
     printf("]");
+}
+void array_println(array_t* a){
+    array_print(a);
+    printf("\n");
 }
 void array_set(array_t * a, int index, void * element){
     if(index < 0 || index >= a->length)
@@ -470,6 +533,12 @@ void map_print(map_t* mp){
     printf("}");
 }
 
+// print map to stdout with newline
+void map_println(map_t* mp){
+    map_print(mp);
+    printf("\n");
+}
+
 // move / swap elements of pos1 and pos2
 void map_move(map_t* mp, size_t pos1, size_t pos2){
     if(pos2 > mp->size || pos1 > mp->size)return;
@@ -482,6 +551,13 @@ void map_move(map_t* mp, size_t pos1, size_t pos2){
 
 void map_delete_id(map_t* mp, size_t at){
     if(mp->size == 0)return;
+    if(at >= mp->size)return;
+    if(!at){
+        pair_destroy(mp->data[0]);
+        mp->data = realloc(mp->data, 1);
+        mp->size--;
+        return;
+    }
     for(size_t i = at; i < mp->size - 1; i++){
         map_move(mp, i, i + 1);
     }
@@ -490,12 +566,17 @@ void map_delete_id(map_t* mp, size_t at){
     mp->size--;
 }
 
-// O(n^2) -> index finding which is log n
+// O(n^2) -> index finding which is N for worst case
 void map_delete(map_t* mp, char* key){
     if(mp->size == 0)return;
     long idx = map_index(mp, key);
     if(idx == -2)return;
-    
+    if(!idx){
+        pair_destroy(mp->data[0]);
+        mp->data = realloc(mp->data, 1);
+        mp->size--;
+        return;
+    }
     for(size_t i = idx; i < mp->size - 1; i++){
         map_move(mp, i, i + 1);
     }
@@ -515,21 +596,58 @@ void map_destroy(map_t* mp){
 
 // end of map
 
-void base_destroy(void){}
+// string iterator (char*) handler
+
+int string_iterator_has_next(iterator_t iter){
+    return iter.pos < strlen((char*)iter.group);
+}
+void string_iterator_next(iterator_t* iter){
+    if(iter->pos > (strlen((char*)iter->group)))return;
+    iter->pos++;
+    iter->value = &iter->group[iter->pos];
+}
+iterator_t string_iterator_create(char* inst){
+    iterator_t it;
+    it.group = inst;
+    it.pos = 0;
+    it.has_next = string_iterator_has_next;
+    it.next = string_iterator_next;
+    it.value = &it.group[0];
+    return it;
+}
+
+// end string iterator (char*) handler
+
 
 // iterator class member
 #define iterator_create(T) _Generic((T),\
     map_t*: map_iterator_create, \
+    char*: string_iterator_create,\
     default: iterator_create_default\
 )(T)
 
-// generic macro applied to every structs, plays as destructor for each structs
-#define destroy(T) _Generic((T),\
+#ifdef _EXT_COROUTINES
+// generic macro applied to every structs that registers this macro.
+// plays as destructor for each structs (coroutine included)
+#define drop(T) _Generic((T),\
+    array_t*: array_destroy,\
+    pair_t*: pair_destroy, \
+    map_t*: map_destroy,\
+    coroutine_t*: coroutine_end,\
+    default: base_destroy\
+)(T)
+#else
+// generic macro applied to every structs that registers this macro.
+// plays as destructor for each structs (coroutine not included)
+#define drop(T) _Generic((T),\
     array_t*: array_destroy,\
     pair_t*: pair_destroy, \
     map_t*: map_destroy,\
     default: base_destroy\
 )(T)
+#endif
 
+
+#endif
 
 #endif
