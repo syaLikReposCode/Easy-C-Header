@@ -255,6 +255,8 @@ int strcmpcase(char* st1, char* st2){
     return cmp;
 }
 
+// WARNING! Avoid using kernel_name for now.
+// It can lead to security issues.
 // returns a kernel name in a heap memory
 char* kernel_name(){
     int code = system("uname -s > os.txt");
