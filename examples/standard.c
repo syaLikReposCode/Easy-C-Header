@@ -13,6 +13,10 @@ int main(){
     // in my case, ken will print "linux" as I am debugging this on Linux
     // but it's already wrapped by strtolower
     free(ken); // good programmer always free heap memory
+    // Noting that kernel_name can be dangerous
+    // as it writes to file directly
+    // Please avoid it for now,
+    // as I am trying to find a secure alternative way for it
 
     char* getlower = strtolower("ABCDEFG"); // heap memory... again! It's opposite are strtoupper
     // the lowercase uses ctype.h so I'm assuming it's ANSI string
