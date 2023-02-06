@@ -4,15 +4,17 @@
 
 #define _EASY_C_HEADER 1
 #define AUTHOR "syaLikShreer"
-#define EASY_C_VERSION "1.0b"
+#define EASY_C_VERSION "1.3b"
 // standard library import
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
-#include <stdlib.h>
 #include <inttypes.h>
 #include <time.h>
+
+// library-defined import
+#include "baseobject.h"
 
 #define ALL "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 #define LETTERS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -57,8 +59,6 @@
                               long: "long",\
                               short: "short", \
                               void*: "memory", \
-                              map_t*: "map",\
-                              array_t*: "array",\
                                default: "unknown")
 #endif
 // Begin Print macro
@@ -76,7 +76,7 @@ void printBool(bool arg){
     printf("%s", (arg) ? "true" : "false");
 }
 void printNone(){
-    printf("");
+    printf("%s", "");
 }
 void printDouble(double arg){
     printf("%lf", arg);
@@ -250,41 +250,36 @@ int strcmpcase(char* st1, char* st2){
     char* lw = strtolower(st1);
     char* l2w = strtolower(st2);
     int cmp = strcmp(lw, l2w);
-    free(lw);
-    free(l2w);
+    drop(lw);
+    drop(l2w);
     return cmp;
 }
 
-// WARNING! Avoid using kernel_name for now.
-// It can lead to security issues.
-// returns a kernel name in a heap memory
-char* kernel_name(){
-    int code = system("uname -s > os.txt");
-    if(code != 0){
-        code = system("schtasks /? > os.txt");
-        if(remove("os.txt") != 0)fprintf(stderr, "Output of os.txt cannot be deleted continuing...");
-        if(!code)return "nt";
-        return "any";
-    }
-    int size = 1;
-    FILE* fp = fopen("os.txt", "r");
-    char c = fgetc(fp);
-    while(c != '\n' && c != EOF){
-        c = fgetc(fp);
-        size++;
-    }
-    rewind(fp);
-    char* g = (char*)calloc(size+1, sizeof(char));
-    fgets(g, size, fp);
-    fclose(fp);
-    if(remove("os.txt") != 0){
-        fprintf(stderr, "Output of os.txt cannot be deleted continuing...");
-    }
-    char* getlwr = strtolower(g);
-    free(g);
-    return getlwr;
-}
+// splits the SRC string with DELIM, returns the result in the RESULT reference
+// returns the counter of splitted string
+size_t strsplit(char* src, const char* delim, char*** result) {
+    size_t count = 0;
+    size_t len = strlen(src);
+    char* copy = (char*) malloc((len + 1) * sizeof(char));
+    strcpy(copy, src);
 
+    char* token = strtok(copy, delim);
+    while (token) {
+      count++;
+      if (count == 1) {
+        *result = (char**) calloc(1, sizeof(char*));
+        (*result)[count-1] = (char*) calloc(strlen(token) + 1, sizeof(char));
+        strcpy((*result)[count-1], token);
+      } else {
+        *result = (char**) realloc(*result, count * sizeof(char*));
+        (*result)[count-1] = (char*) calloc(strlen(token) + 1, sizeof(char));
+        strcpy((*result)[count-1], token);
+      }
+      token = strtok(NULL, delim);
+    }
+    drop(copy);
+    return count;
+}
 
 
 #ifdef STRUCTS
@@ -303,16 +298,7 @@ int iterator_has_next_default(iterator_t iter){
 }
 // if struct does not implement trait (iterator_next) macro
 void iterator_next_default(iterator_t* iter){}
-// if struct does not implement trait (iterator_create) macro
-iterator_t iterator_create_default(void){
-    iterator_t it;
-    it.group = NULL;
-    it.pos = 0;
-    it.value = NULL;
-    it.next = iterator_next_default;
-    it.has_next = iterator_has_next_default;
-    return it;
-}
+
 
 // start of array struct
 
@@ -407,12 +393,14 @@ void array_set_int(array_t * a, int index, int value){
 
 // end of array struct
 
-
 // independent-type pair.
-typedef struct{
+typedef struct Pair{
     char* key;
     void* value;
+    void(*destroy)(struct Pair*);
 } pair_t;
+
+void pair_destroy(pair_t* pair);
 
 // create heap-based memory pair
 pair_t* pair_make(char* key, void* value){
@@ -421,6 +409,7 @@ pair_t* pair_make(char* key, void* value){
     pair->value = calloc(strlen(value), sizeof(char));
     strcpy(pair->key, key);
     memcpy(pair->value, value, strlen(value));
+    pair->destroy = pair_destroy;
     return pair;
 }
 
@@ -429,6 +418,7 @@ pair_t pair_create(char* key, void* value){
     pair_t pair;
     pair.key = key;
     pair.value = value;
+    pair.destroy = pair_destroy; // not needed
     return pair;
 }
 
@@ -442,10 +432,17 @@ void pair_destroy(pair_t* pair){
 // begin of map
 
 // map type, utilizes heap storage for use
-typedef struct{
+typedef struct Map{
     pair_t** data;
     size_t size;
+    iterator_t(*create_iter)(struct Map*);
+    void(*destroy)(struct Map*);
 } map_t;
+
+// prototypes so map_new can access
+
+void map_destroy(map_t* mp);
+iterator_t map_iterator_create(map_t* mp);
 
 // initializes empty map
 map_t* map_new(){
@@ -454,6 +451,8 @@ map_t* map_new(){
 
     map->size = 0;
     map->data = NULL;
+    map->destroy = map_destroy;
+    map->create_iter = map_iterator_create;
     return map;
 }
 
@@ -568,14 +567,14 @@ void map_delete_id(map_t* mp, size_t at){
     mp->size--;
 }
 
-// O(n^2) -> index finding which is N for worst case
+// O(2N) -> index finding which is N for worst case and makes the I pair move to the end
 void map_delete(map_t* mp, char* key){
     if(mp->size == 0)return;
     long idx = map_index(mp, key);
     if(idx == -2)return;
     if(!idx){
         pair_destroy(mp->data[0]);
-        mp->data = realloc(mp->data, 1);
+        free(mp->data);
         mp->size--;
         return;
     }
@@ -606,7 +605,8 @@ int string_iterator_has_next(iterator_t iter){
 void string_iterator_next(iterator_t* iter){
     if(iter->pos > (strlen((char*)iter->group)))return;
     iter->pos++;
-    iter->value = &iter->group[iter->pos];
+    char* get_iter = (char*)iter->group;
+    iter->value = &get_iter[iter->pos];
 }
 iterator_t string_iterator_create(char* inst){
     iterator_t it;
@@ -614,40 +614,16 @@ iterator_t string_iterator_create(char* inst){
     it.pos = 0;
     it.has_next = string_iterator_has_next;
     it.next = string_iterator_next;
-    it.value = &it.group[0];
+    char* get_iter = (char*)it.group;
+    it.value = &get_iter[0];
     return it;
 }
+// name alias of string_iterator_create, since standard C string (char*) is a primitive type
+// although you cannot invoke this with foreach as char* does not rely on struct.
+#define str_iter string_iterator_create
 
 // end string iterator (char*) handler
 
-
-// iterator class member
-#define iterator_create(T) _Generic((T),\
-    map_t*: map_iterator_create, \
-    char*: string_iterator_create,\
-    default: iterator_create_default\
-)(T)
-
-#ifdef _EXT_COROUTINES
-// generic macro applied to every structs that registers this macro.
-// plays as destructor for each structs (coroutine included)
-#define drop(T) _Generic((T),\
-    array_t*: array_destroy,\
-    pair_t*: pair_destroy, \
-    map_t*: map_destroy,\
-    coroutine_t*: coroutine_end,\
-    default: base_destroy\
-)(T)
-#else
-// generic macro applied to every structs that registers this macro.
-// plays as destructor for each structs (coroutine not included)
-#define drop(T) _Generic((T),\
-    array_t*: array_destroy,\
-    pair_t*: pair_destroy, \
-    map_t*: map_destroy,\
-    default: base_destroy\
-)(T)
-#endif
 
 
 #endif

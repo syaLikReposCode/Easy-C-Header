@@ -13,10 +13,18 @@ to your C code.
 this project was licensed under the terms of MIT License
 
 # Target and Notes
-this Header targets for simplicity and ease-of-use for your programs (NOTE: this is for **C ONLY**, do not try include this header on C++ code)
+this Header targets for simplicity and ease-of-use for your programs (NOTE: this is for **C ONLY**, do not try include this header on C++ code), and also for beginners!
+
+For Beginners, Learn how the function works, then I'm sure you will understand how it works :D
+
+For Experts, Sorry this is not for you! The implementation is not optimized or efficient in any way, it's made to make it easier to understand, but if you're willing to improve it fork it and pull request!
+
+Backstory why this is created:
+
+Originally this repository was for new programming language, but I rethink again "I'm still limited with my knowledge", whilst thinking that I got another thought "Library that makes C easy is less and bit more complex", so then I threw away my invention on P.L. (because I think there's lots of P.L. already), and starts making this library, you can see how much I've changed from v1
 
 # Version
-header currently version 1.0 beta
+header currently version 1.3 beta
 
 # Written
 this Header is written completely using ANSI C (standardized C) (except for the file inside `ext` folder)
@@ -42,7 +50,7 @@ this Header is written completely using ANSI C (standardized C) (except for the 
 | Macro Constant | base     | DIGITS          | none      | printable digits         |
 | Macro Constant | base     | SYMBOL          | none      | punctuation              |
 | function       | base     | strcmpcase      | int       | compares 2 string ignoring the case |
-| function       | base     | kernel_name     | char*     | get kernel names |
+| function       | base     | strsplit        | size_t    | splits token and store it in result |
 
 **[STRUCT TYPE (need STRUCTS macro to access)]**
 | Name Type  | Child of     | Defined Name    | Returns   | functionality   |
@@ -74,85 +82,81 @@ this Header is written completely using ANSI C (standardized C) (except for the 
 | function   | map_t        | map_print       | void       | prints map in JSON format |
 | function   | map_t        | map_delete      | void       | delete key from map |
 | function   | map_t        | map_delete_id   | void       | delete index from map |
-| function   | base         | drop            | void       | frees any data  |
 
 **[FUNCTION PARAMETERS]**
-| Defined Name      |         Parameters             |
-| :---------------: | :----------------------------: |
-| typecheck         | Generic Template               |
-| print & println   | Generic  Template              |
-| strtolower        | char* str                      |
-| strtoupper        | char* str                      |
-| repstr            | char* str, char* f, char* n    |
-| seed              | None (void)                    |
-| randint           | int min, int m                 |
-| randstr           | char* sup, int len             |
-| strcmpcase        | char* s1, int s2               |
-| kernel_name       | None (void)                    |
-| kernel_name       | None (void)                    |
-| next_default      | iterator_t* it                 |
-| has_next_default  | iterator_t it                  |
-| create_default    | Generic Template               |
-| create_default    | Generic Template               |
-| array_new         | int elementSize                |
-| array_get         | array_t* this, int idx         |
-| array_push        | array_t* this, void* elem      |
-| drop (array)      | array_t* this                  |
-| array_get_int     | array_t* this, int idx         |
-| array_remove      | array_t* this, int idx         |
-| array_insert      | array_t* a, int idx, void* e   |
-| array_print       | array_t* this                  |
-| array_set         | array_t* th, int idx, void* e  |
-| array_set_int     | array_t* th, int idx, int el   |
-| pair_make         | char* key, void* value         |
-| pair_create       | char* key, void* value         |
-| drop (pair)       | pair_t* this                   |
-| map_new           | None (void)                    |
-| next (map_t)      | iterator_t* instance           |
-| has_next (map_t)  | iterator_t instance            |
-| create (map_t)    | map_t* instance                |
-| map_insert        | map_t* this, char* k, void* v  |
-| map_index         | map_t* this, char* key         |
-| map_get           | map_t* this, size_t idx        |
-| map_find          | map_t* this, char* k           |
-| map_set           | map_t* this, char* k, void* nv |
-| map_print         | map_t* this                    |
-| map_move          | map_t* mp, size_t i, size_t j  |
-| map_delete_id     | map_t* this, size_t i          |
-| map_delete        | map_t* this, char* k           |
-| drop (map_t)      | map_t* this                    |
-| drop (base)       | None (void)                    |
+| Defined Name          |         Parameters                    |
+| :---------------:     | :----------------------------:        |
+| typecheck             | Generic Template                      |
+| print & println       | Generic  Template                     |
+| strtolower            | char* str                             |
+| strtoupper            | char* str                             |
+| repstr                | char* str, char* from, char* new      |
+| seed                  | None (void)                           |
+| randint               | int min, int m                        |
+| randstr               | char* sup, int len                    |
+| strcmpcase            | char* s1, int s2                      |
+| strsplit              | char* src, char* del, char*** result  |
+| array_new             | int elementSize                       |
+| array_get             | array_t* this, int idx                |
+| array_push            | array_t* this, void* elem             |
+| array_get_int         | array_t* this, int idx                |
+| array_remove          | array_t* this, int idx                |
+| array_insert          | array_t* a, int idx, void* e          |
+| array_print           | array_t* this                         |
+| array_set             | array_t* th, int idx, void* e         |
+| array_set_int         | array_t* th, int idx, int el          |
+| pair_make             | char* key, void* value                |
+| pair_create           | char* key, void* value                |
+| map_new               | None (void)                           |
+| next (map_t)          | iterator_t* instance                  |
+| has_next (map_t)      | iterator_t instance                   |
+| create (map_t)        | map_t* instance                       |
+| map_insert            | map_t* this, char* k, void* v         |
+| map_index             | map_t* this, char* key                |
+| map_get               | map_t* this, size_t idx               |
+| map_find              | map_t* this, char* k                  |
+| map_set               | map_t* this, char* k, void* nv        |
+| map_print             | map_t* this                           |
+| map_move              | map_t* mp, size_t i, size_t j         |
+| map_delete_id         | map_t* this, size_t i                 |
+| map_delete            | map_t* this, char* k                  |
 
 
 # News
 Welcome to Beta phase, I will focus to add more APIs than standard easyc.h for now, easyc.h will uncommonly get new updates, APIs are provided in the "Easy_C/ext" folder
 
+Decided to kept separate exclusive API from standard.
 
-Simple concurrent handling, coroutine! How to get them? Add this code to your file:
+Removed kernel_name.
 
-```c
-#define STRUCTS
-#include "Easy_C/ext/coroutine.h"
-```
+Added examples on STRUCTS macro, named "standard_class.c"
 
-After that you just unlocked the *coroutine_t* struct and it's functions!
+Added coroutine_resume_static function.
 
-(Coroutines are in testing, I'm not sure to include it in easyc.h standard, so I make an ext folder for external APIs.)
+Renamed state CoroutineStart, CoroutineSuspend to CoroutineRunning CoroutineSuspended
 
-added examples folder for usage
+Added state CoroutineStopped and the state will return "finished"
 
-renamed destroy to drop, and base_destroy now just frees memory
+Fixed message "warning: dereferencing (void*) pointer" on string iterator
 
-added string (char*) iterator type
+Added baseobject (header) entity.
 
-Added Macro Guard to prevent file conflict
+Now every coroutine context control (stop, yield, context_end, context_begin) requires an object of coroutine.
 
-Drop macro support for coroutines
+renamed get_coroutine_state to coroutine_get_state
 
-Added if preprocessor closure to determine struct and coroutine availability
+ArgType enum, Arg Union and arg_typeof now belongs to BaseObject entity (previously owned by coroutine header)
 
-Fixed println, print, and typecheck doesn't work not defining STRUCTS
+drop no longer invokes specific destructor of struct, frees regular memory, belongs to baseobject.
 
-Modified kernel_name to properly checks if it's windows or other kernel
+Added drops in baseobject, drops calls (X->destroy(X)) for each heap-allocated structs, struct that wants to be registered in drops must have their own "destroy" member.
 
-Fixed map_delete_id, and map_delete cannot delete map when the size is 1
+Removes iterator_create, in replace for embedding their own iterator instance, if a structs that wants to be "foreach"-ed in the baseobject, their iterator function must be named create_iter, struct must be heap-allocated.
+
+(FOR DROPS AND ITERATOR EMBEDDING, SEE examples/embedding_traits.c)
+
+Added strsplit function
+
+With iterator_create macro removal, string iterator have an alias called str_iter
+
+(Wow what a high jump from 0 to 3, why? Because I intentionally merging the 1.1b, 1.2b and 1.3b functions in the 1.3b version)

@@ -14,18 +14,21 @@ And I also have to go against Standard C (ANSI C) coding.
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <stdint.h>
+#include "../baseobject.h"
 
 #define COROUTINE_BYARGS 1
 #define COROUTINE_BYWRAP 2
 
 // context switching, but in reality it's just plain case-switch
+
 #define coroutine_context_begin(X) switch(X->yielded){
 #define coroutine_context(X) case X:
-#define coroutine_stop break;
-#define coroutine_context_end \
+#define coroutine_stop(co) \
+    co->state = CoroutineSuspended\
+    break;
+#define coroutine_context_end(X) \
     default: break;\
-    }
+    } X->state = CoroutineStopped;
 
 
 // lightweight thread that performs multitasking without separating the main dispatch
@@ -36,71 +39,38 @@ typedef void(*cworker_t)(struct Coroutine*);
 
 // used to determine which state is the coroutine currently
 enum CoroutineState{
-    CoroutineInit = 0,
-    CoroutineStart,
-    CoroutineSuspend
-} CoState;
+    CoroutineInit = 0, // indicates the task is ready to be started
+    CoroutineRunning, // indicates the task is started / resumed
+    CoroutineSuspended, // indicates it has been yielded or encountered coroutine_stop
+    CoroutineStopped // indicates the task has finished all the context
+};
 
-// argument type used to pass in the coroutine worker
-typedef enum arg_t{
-    INT,
-    STRING,
-    CHAR,
-    DOUBLE,
-    UINT,
-    MEMORY // not type-safe, use it with care
-} ArgType;
-
-// subset of ArgType
-typedef union{
-    long long int_val;
-    char* string;
-    int char_val;
-    double double_val;
-    uint64_t uint_val;
-    void* memory; // not type-safe, use it with care
-} Arg;
 
 typedef struct Coroutine{
     jmp_buf* context;
     enum CoroutineState state;
     cworker_t worker;
     size_t argc;
-    ArgType* types;
-    Arg* args;
+    enum ArgType* types;
+    union Arg* args;
     int cotype;
-    uint64_t yielded;
+    int yielded;
+    void(*destroy)(struct Coroutine*); // coroutine drop model
 } coroutine_t;
 
-// used on debugging, get current coroutine state
-const char* get_coroutine_state(enum CoroutineState state){
+void coroutine_end(coroutine_t* co);
+
+// get current coroutine state enumeration on stack-based string
+const char* coroutine_get_state(enum CoroutineState state){
     switch(state){
         case CoroutineInit:
-        return "Init";
-        case CoroutineStart:
-        return "Start";
-        case CoroutineSuspend:
-        return "Suspend";
-        default:
-        return "Unknown";
-    }
-}
-
-// returns the typeof ArgType passed in the arguments
-const char* arg_typeof(ArgType type){
-    switch(type){
-        case INT:
-        return "int";
-        case STRING:
-        return "string";
-        case CHAR:
-        return "char";
-        case DOUBLE:
-        return "float";
-        case UINT:
-        return "unsigned";
-        case MEMORY:
-        return "memory";
+        return "ready";
+        case CoroutineRunning:
+        return "running";
+        case CoroutineSuspended:
+        return "stopped";
+        case CoroutineStopped:
+        return "finished";
         default:
         return "unknown";
     }
@@ -113,14 +83,15 @@ coroutine_t* coroutine_create(cworker_t worker, size_t argc, ...){
     co->worker = worker;
     co->argc = argc;
     co->context = (jmp_buf*)malloc(sizeof(jmp_buf));
-    co->args = malloc(sizeof(Arg) * argc);
-    co->types = malloc(sizeof(ArgType) * argc);
+    co->args = malloc(sizeof(union Arg) * argc);
+    co->types = malloc(sizeof(enum ArgType) * argc);
     co->cotype = COROUTINE_BYARGS;
     co->yielded = 0;
+    co->destroy = coroutine_end;
     va_list args;
     va_start(args, argc);
     for(int i = 0; i < argc; i++){
-        co->types[i] = va_arg(args, ArgType);
+        co->types[i] = va_arg(args, enum ArgType);
         switch(co->types[i]){
             case INT:
                 co->args[i].int_val = va_arg(args, long long);
@@ -157,6 +128,7 @@ coroutine_t* coroutine_wrap(cworker_t worker){
     co->argc = 0;
     co->args = NULL;
     co->types = NULL;
+    co->destroy = coroutine_end;
     co->context = (jmp_buf*)malloc(sizeof(jmp_buf));
     co->yielded = 0;
 
@@ -166,38 +138,127 @@ coroutine_t* coroutine_wrap(cworker_t worker){
 // Starts coroutine if it's still in State::CoroutineInit state.
 void coroutine_start(coroutine_t* co){
     if(co->state == CoroutineInit){
-        co->state = CoroutineStart;
+        co->state = CoroutineRunning;
         if(setjmp(*(co->context)) == 0){
             co->worker(co);
         }
     }
 }
 
-// resumes the State::CoroutineSuspend coroutine.
+// resumes the State::CoroutineSuspended coroutine.
 void coroutine_resume(coroutine_t* co){
-    if(co->state == CoroutineSuspend){
-        co->state = CoroutineStart;
+    if(co->state == CoroutineSuspended){
+        co->state = CoroutineRunning;
         if(setjmp(*(co->context)) == 0){
             co->worker(co);
         }
     }
 }
 
-// make the current State::CoroutineStart coroutine State::CoroutineSuspend
+// make the current State::CoroutineRunning coroutine State::CoroutineSuspended
 void coroutine_yield(coroutine_t* co){
-    if(co->state == CoroutineStart){
+    if(co->state == CoroutineRunning){
         co->yielded++;
-        co->state = CoroutineSuspend;
+        co->state = CoroutineSuspended;
         longjmp(*(co->context), co->yielded);
     }
 }
 
+// resumes from the "TO" context.
+// this functions will set :coroutine_instance:->yielded into "TO"
+void coroutine_resume_static(coroutine_t* co, int to){
+    if(co->state == CoroutineSuspended){
+        co->yielded = to;
+        co->state = CoroutineRunning;
+        if(setjmp(*(co->context)) == 0){
+            co->worker(co);
+        }
+    }
+}
+
+// put new args to the coroutine, the same way you use it on coroutine_create
+void coroutine_putarg(coroutine_t* co, size_t app, ...){
+    if(app == 0)return;
+    if(co->cotype == COROUTINE_BYWRAP){
+        // checks for outside changes on types and args
+        // if found, remove them
+        if((co->args != NULL && co->types != NULL) && co->argc == 0){
+            free(co->args);
+            free(co->types);
+            // preventing dangling pointer
+            co->args = NULL;
+            co->types = NULL;
+        }
+        co->args = malloc(sizeof(union Arg) * app);
+        co->argc = app;
+        co->types = malloc(sizeof(enum ArgType) * app);
+        va_list args;
+        va_start(args, app);
+        for(size_t i = 0; i < app; i++){
+            co->types[i] = va_arg(args, enum ArgType);
+            switch(co->types[i]){
+            case INT:
+                co->args[i].int_val = va_arg(args, long long);
+                break;
+            case STRING:
+                co->args[i].string = va_arg(args, char*);
+                break;
+            case CHAR:
+                co->args[i].char_val = va_arg(args, int);
+                break;
+            case DOUBLE:
+                co->args[i].double_val = va_arg(args, double);
+                break;
+            case UINT:
+                co->args[i].uint_val = va_arg(args, uint64_t);
+                break;
+            case MEMORY:
+                co->args[i].memory = va_arg(args, void*);
+                break;
+            default:
+                break;
+        }
+        }
+        va_end(args);
+        return;
+    }
+        co->args = realloc(co->args, sizeof(union Arg) * (co->argc + app));
+        co->types = realloc(co->types, sizeof(enum ArgType) * (co->argc + app));
+        va_list args;
+        va_start(args, app);
+        for(size_t i = co->argc; i < co->argc + app; i++){
+            co->types[i] = va_arg(args, enum ArgType);
+            switch(co->types[i]){
+                case INT:
+                    co->args[i].int_val = va_arg(args, long long);
+                    break;
+                case STRING:
+                    co->args[i].string = va_arg(args, char*);
+                    break;
+                case CHAR:
+                    co->args[i].char_val = va_arg(args, int);
+                    break;
+                case DOUBLE:
+                    co->args[i].double_val = va_arg(args, double);
+                    break;
+                case UINT:
+                    co->args[i].uint_val = va_arg(args, uint64_t);
+                    break;
+                case MEMORY:
+                    co->args[i].memory = va_arg(args, void*);
+                    break;
+                default:
+                    break;
+            }
+        }
+        co->argc += app;
+        va_end(args);
+}
+
 // frees the coroutine (registered in drop)
 void coroutine_end(coroutine_t* co){
-    if(co->cotype == COROUTINE_BYARGS){
-        free(co->args);
-        free(co->types);
-    }
+    free(co->args);
+    free(co->types);
     free(co->context);
     free(co);
 }
