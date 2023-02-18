@@ -1,0 +1,68 @@
+-- THIS FILE ONLY CONTAINS MEMBER IN STANDARD HEADER (refer to easyc.h) --
+
+-- Non Structs
+===========================================================================================================================================================
+|  Name              |           functionality             |       Returns       |              Parameters             |            Child Of              |
+| :---------------:  | :---------------------------------: | :-----------------: | :---------------------------------: |:-------------------------------: |
+| ALL (Macro)        | All keyboard keys                   |        none         |  none                               |             base                 |
+| LETTERS (Macro)    | All alphabetic characters           |        none         |  none                               |             base                 |
+| WORD_UPPER (Macro) | All uppercase alphabetic characters |        none         |  none                               |             base                 |
+| WORD_LOWER (Macro) | All lowercase alphabetic characters |        none         |  none                               |             base                 |
+| SYMBOL (Macro)     | All symbolic characters             |        none         |  none                               |             base                 |
+| DIGITS (Macro)     | All numeric characters              |        none         |  none                               |             base                 |
+| typecheck (Macro)  | Checks the type of given data       |        char*        |  T                                  |             base                 |
+| print (Macro)      | Prints the type T to stdout         |        none         |  T                                  |             base                 |
+| println (Macro)    | Same as print but adds newline      |        none         |  T                                  |             base                 |
+| strtolower         | Returns the string in lowercase     |        char*        |  char* str                          |             base                 |
+| strtoupper         | Returns the string in uppercase     |        char*        |  char* str                          |             base                 |
+| repstr             | Returns the replaced string         |        char*        |  char* text, char* old, char* new   |             base                 |
+| randint            | Returns a randomized int (seed)     |        int          |  int min, int max                   |             base                 |
+| randstr            | Returns a randomized string (seed)  |        char*        |  char* words, int length            |             base                 |
+| seed               | Sets the random seed to time(NULL)  |        none         |  none                               |             base                 |
+| strcmpcase         | Compare 2 string ignoring the case  |        int          |  char* str1, char* str2             |             base                 |
+| strsplit           | Splits the given string and delim   |        size_t       |  char* src, char* dlim, char*** res |             base                 |
+===========================================================================================================================================================
+
+
+-- Structs (STRUCTS Macro needed before access)
+===========================================================================================================================================================
+|  Name              |           functionality             |       Returns       |              Parameters             |            Child Of              |
+| :---------------:  | :---------------------------------: | :-----------------: | :---------------------------------: |:-------------------------------: |
+| iterator_t (trait) | base iterator to traverse elements  |        none         |  none                               |             base                 |
+| array_t (class)    | growable-size array to store data   |        none         |  none                               |             base                 |
+| array_new          | initialize new array utilizing heap |        array_t*     |  int elemSize                       |             array_t              |
+| array_get          | get array_t from index              |        void*        |  array_t* this, int index           |             array_t              |
+| array_push         | push elements to array instance     |        none         |  array_t* this, void* elem          |             array_t              |
+| array_destroy      | free the array instance             |        none         |  array_t* this                      |             array_t              |
+| array_get_int      | get array_t from index              |        int          |  array_t* this, int index           |             array_t              |
+| array_remove       | removes an element at specified id  |        none         |  array_t* this, int index           |             array_t              |
+| array_insert       | inserts element at index            |        none         |  array_t* this, int id, void* elem  |             array_t              |
+| array_print(ln)    | prints array (with nline) to stdout |        none         |  array_t* this                      |             array_t              |
+| array_set          | sets new element at index           |        none         |  array_t* this, int id, void* elem  |             array_t              |
+| array_set_int      | sets new int element at index       |        none         |  array_t* this, int id, int elem    |             array_t              |
+| pair_t (class)     | a key-value data type               |        none         |  none                               |             base                 |
+| pair_make          | inserts key-value on heap           |        pair_t*      |  char* key, void* element           |             pair_t               |
+| pair_create        | inserts key-value on stack          |        pair_t       |  char* key, void* element           |             pair_t               |
+| pair_destroy       | destroy heap-allocated pair         |        none         |  pair_t* instance                   |             pair_t               |
+| map_t (class)      | an array of pairs with op functions |        none         |  none                               |             base                 |
+| map_new            | creates new instance of a map       |        map_t*       |  none                               |             map_t                |
+| map_insert         | inserts new pair on the map         |        none         |  map_t* this, char* key, void* elem |             map_t                |
+| map_index          | get the index of a map based on key |        long         |  map_t* this, char* key             |             map_t                |
+| map_get            | get the value by index on a map     |        void*        |  map_t* this, int id                |             map_t                |
+| map_find           | get the value by key on a map       |        void*        |  map_t* this, char* key             |             map_t                |
+| map_set            | set new value to a key              |        none         |  map_t* this, char* key, void* nval |             map_t                |
+| map_print(ln)      | prints the map into stdout          |        none         |  map_t* this                        |             map_t                |
+| map_move           | move the elem from pos1 to pos2     |        none         |  map_t* this, size_t pos1, pos2     |             map_t                |
+| map_delete         | removes an element by key from map  |        none         |  map_t* this, char* key             |             map_t                |
+| map_delete_id      | removes an element by id from map   |        none         |  map_t* this, size_t at             |             map_t                |
+| map_destroy        | free the map instance               |        none         |  map_t* this                        |             map_t                |
+| str_iter (alias)   | creates an iterator based on string |        iterator_t   |  char* inst                         |             base                 |
+===========================================================================================================================================================
+
+
+-- PLACEHOLDER (table copy)
+===========================================================================================================================================================
+|  Name              |           functionality             |       Returns       |              Parameters             |            Child Of              |
+| :---------------:  | :---------------------------------: | :-----------------: | :---------------------------------: |:-------------------------------: |
+|                    |                                     |        x            |  x                                  |             x                    |
+===========================================================================================================================================================

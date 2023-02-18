@@ -1,15 +1,14 @@
 // WARNING! THIS HEADER IS FOR C ONLY! DO NOT INCLUDE THIS HEADER WITH C++
-// for C++ please use the .hpp version [Coming Soon]
+// for C++ please use the .hpp version [Not available yet]
 #ifndef _EASY_C_HEADER // checks if the header is not included yet
 
 #define _EASY_C_HEADER 1
 #define AUTHOR "syaLikShreer"
-#define EASY_C_VERSION "1.3b"
+#define EASY_C_VERSION "1.5b"
 // standard library import
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include <string.h>
 #include <inttypes.h>
 #include <time.h>
 
@@ -18,11 +17,11 @@
 
 #define ALL "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 #define LETTERS "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-#define ASCII_LOWER "abcdefghijklmnopqrstuvwxyz"
-#define ASCII_UPPER "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define WORD_LOWER "abcdefghijklmnopqrstuvwxyz"
+#define WORD_UPPER "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define SYMBOL "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 #define DIGITS "0123456789"
-#ifdef _EXT_COROUTINES
+#ifdef _EXT_GREEN_THREADS
 #define typecheck(T) _Generic( (T), int: "integer", \
                               bool: "boolean", \
                               char*: "char_memory",\
@@ -34,7 +33,7 @@
                               void*: "memory", \
                               map_t*: "map",\
                               array_t*: "array",\
-                              coroutine_t*: "task", \
+                              gthread_t*: "task", \
                                default: "unknown")
 #elif defined(STRUCTS)
 #define typecheck(T) _Generic( (T), int: "integer", \
@@ -285,7 +284,7 @@ size_t strsplit(char* src, const char* delim, char*** result) {
 #ifdef STRUCTS
 // base structure for any types that requires iterator
 typedef struct iterator_trait{
-    void* group;
+    const void* group;
     void* value;
     size_t pos;
     void (*next)(struct iterator_trait*);
@@ -619,7 +618,7 @@ iterator_t string_iterator_create(char* inst){
     return it;
 }
 // name alias of string_iterator_create, since standard C string (char*) is a primitive type
-// although you cannot invoke this with foreach as char* does not rely on struct.
+// although you cannot invoke this with foreach, as char* does not rely on struct.
 #define str_iter string_iterator_create
 
 // end string iterator (char*) handler

@@ -7,7 +7,7 @@
 
 // add the header and define structs first
 #define STRUCTS
-#include "../Easy_C/easyc.h"
+#include "../easy_api/easyc.h"
 
 // then create your struct, let's call it array_int
 struct array_int{
@@ -81,7 +81,7 @@ arr_i_t* array_i_new(){
 
     arr->size = 0;
     arr->value = NULL;
-    arr->create_iter = array_int_create; // now, you just embed your own iterator inside your struct!
+    arr->create_iter = array_int_create; // right now, you just embed your own iterator inside your struct!
     arr->destroy = array_i_destroy;
     return arr;
 }
@@ -117,11 +117,26 @@ int main(void){
         int* get_ptr = (int*)it.value;
         println(*get_ptr); // should print 30 and 60 in the console
     } // or foreach(arr, it), it's the same
-    drops(arr); // free when it's no longer needed
+    hdrop(arr); // free when it's no longer needed
     // or you can: array_i_destroy(arr), arr->destroy(arr), it's the same.
     return 0;
 }
 //end
+
+/*
+    Important Note:
+    This example embed the destroy that drops would call.
+    If you have a reference-allocated struct, embed sdrop instead
+    for example:
+    void arr_i_init(arr_i_t* ref){
+        ref->value = NULL;
+        ref->size = 0;
+        ref->create_iter = array_int_create;
+        ref->destroy = array_destroy;
+    }
+    as you can see, the ref does not call malloc like in the arr_i_new.
+    With that, you can call sdrop.
+*/
 
 /*
     END OF EXAMPLE

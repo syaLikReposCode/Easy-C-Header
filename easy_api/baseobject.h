@@ -1,23 +1,23 @@
 /*
-    baseobject header contains all the functions/structs in the header need.
+    baseobject header contains all the common functions/structs in the header need.
     and a non-existent, applicable struct trait that will
-    "automatically" be embedded into the structs of the header.
+    "automatically" be embedded into the structs of the header (it does nothing though).
     Every structs have the chance to implement their own base destructor.
     Can directly be functional (e.g. base_delete), or embed the base trait function
     named drop_fn.
     Provides arguments instance (Arg union, ArgType enum, arg_typeof) if some structs need.
 */
 
-#ifndef _BASE_INCLUDED
-#define _BASE_INCLUDED 1
+#ifndef _EBASE_INCLUDED
+#define _EBASE_INCLUDED 1
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 // allocates N memory of T type, returns the heap memory.
 #define alloc(T, N) (T*)malloc(N)
 // allocates N array memory of T type with the size of M, returns heap memory.
 #define alloc_a (T, N) (T*)calloc(N, sizeof(T))
-
 
 
 /* (Pseudo-information) that represents base trait to be applied to every structs
@@ -28,12 +28,25 @@
 #autoembed
 */
 
+// DROP TRAIT-LIKE VARIANTS
+
 // native drop. Frees memory, takes void* pointer as parameter.
 #define drop free
 
 // struct-defined destructor drop, calls 'drop_fn destroy' from the struct.
-// The struct must be heap-allocated so it can return "this" object.
-#define drops(X) X->destroy(X)
+// difference between sdrop are, this used to destroy the instance
+// that is heap-allocated (e.g. Struct instance that object_new returns)
+// The struct must be heap-allocated so it can call "this" object.
+#define hdrop(X) X->destroy(X)
+
+// struct-defined destructor drop, calls 'drop_fn destroy' from the struct.
+// difference between drops are
+// this deletes the instance without a reference nor heap-allocated
+// (e.g. Struct instance that is created using reference in the array_new, see embedding_traits.c important note)
+#define sdrop(X) X.destroy(X)
+
+// Same like sdrop but instead the passed object is a reference to the object.
+#define rdrop(X) X.destroy(&X)
 
 // argument type used to pass for the struct instance
 enum ArgType{

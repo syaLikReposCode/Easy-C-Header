@@ -4,7 +4,7 @@
     first we need to define STRUCTS to access the class.
 */
 #define STRUCTS
-#include "../Easy_C/easyc.h"
+#include "../easy_api/easyc.h"
 
 int main(){
     /*

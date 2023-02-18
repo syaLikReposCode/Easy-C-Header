@@ -1,0 +1,3 @@
+Backstory why this is created:
+
+Originally this repository was for new programming language, but I rethink again "I'm still limited with my knowledge", whilst thinking that I got another thought "Library that makes C easy is less and bit more complex", so then I threw away my invention on P.L. (because I think there's lots of P.L. already), and starts making this library, you can see how much I've changed from v1

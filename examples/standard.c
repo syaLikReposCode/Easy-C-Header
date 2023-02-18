@@ -3,7 +3,7 @@
     this is for standard (non-struct) implementations,
     aka the one in easyc.h
 */
-#include "../Easy_C/easyc.h"
+#include "../easy_api/easyc.h"
 
 int main(){
     // you can see full list of doc in the README.md
