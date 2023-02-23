@@ -13,14 +13,20 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-
-// allocates N memory of T type, returns the heap memory.
-#define alloc(T, N) (T*)malloc(N)
-// allocates N array memory of T type with the size of M, returns heap memory.
-#define alloc_a (T, N) (T*)calloc(N, sizeof(T))
+#include <limits.h>
 
 
-/* (Pseudo-information) that represents base trait to be applied to every structs
+// an alias for struct except it has no member functions, or the members are in field.
+// Known as interface or trait. (example trait: iterator)
+#define trait_ struct
+
+// allocates N memory of T type, returns the heap memory uninitialized.
+#define umem(T, N) (T*)malloc(N)
+// allocates N array memory of T type with the size of T, returns heap memory with 0 initialized.
+#define zmem(T, N) ((T*)calloc(N, sizeof(T)))
+
+
+/* (Nonexistent-implementation) that represents base trait to be applied to every structs
 #set-entity nonexistent
 #accessible true
 #name base
@@ -28,6 +34,8 @@
 #autoembed
 */
 
+// (should be accurate) Returns the size of a CPU bit representation.
+#define CBITS sizeof(void*) * CHAR_BIT
 // DROP TRAIT-LIKE VARIANTS
 
 // native drop. Frees memory, takes void* pointer as parameter.

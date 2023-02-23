@@ -2,6 +2,7 @@
     EXAMPLE FILE
     this file contains the example of using the standard (easyc.h) class in this header.
     first we need to define STRUCTS to access the class.
+
 */
 #define STRUCTS
 #include "../easy_api/easyc.h"
@@ -23,34 +24,35 @@ int main(){
         see behind the curtain!
     */
     // array example
-    array_t* a = array_new(30);
-    /*
-        this creates an array with the elementSize of 30
-        the array_t is not modified by me yet it still uses v1 array_t
-    */
-    array_push(a, "hello world!");
-    /*
-        array_push only takes string as it's parameter
-        although it explicitly says "void*"
-        but it still uses v1, so sorry for the inconvenience!
+    // array_t* a = array_new(30);
+    // /*
+    //     this creates an array with the elementSize of 30
+    //     the array_t is not modified by me yet it still uses v1 array_t,
+    //     the array_t code took from a github repo a long time ago, I forgot what's the name :P
+    // */
+    // array_push(a, "hello world!");
+    // /*
+    //     array_push only takes string as it's parameter
+    //     although it explicitly says "void*"
+    //     but it still uses v1, so sorry for the inconvenience!
 
-        array_push has a cousin named array_insert,
-        it differs from array_push, array_insert takes 3 parameter:
-        array_t* this, size_t pos, void* elem
-        which inserts the element into the "pos" position, pretty neat huh?
-    */
-    char* get = (char*)array_get(a, 0);
-    println(get); // prints: "hello world!"
-    array_set(get, 0, "worldo!"); // now index 0 is no longer "hello world1"
-    // the equivalent if you want to set an int inside the array is array_set_int
-    array_remove(a, 0); // removes the first element of the array
-    /*
-        Worth noting array_t still uses v1 array, so array_remove and other functions
-        may be broken.
-    */
-    array_print(a); // prints: ["worldo!"]
+    //     array_push has a cousin named array_insert,
+    //     it differs from array_push, array_insert takes 3 parameter:
+    //     array_t* this, size_t pos, void* elem
+    //     which inserts the element into the "pos" position, pretty neat huh?
+    // */
+    // char* get = (char*)array_get(a, 0);
+    // println(get); // prints: "hello world!"
+    // array_set(get, 0, "worldo!"); // now index 0 is no longer "hello world1"
+    // // the equivalent if you want to set an int inside the array is array_set_int
+    // array_remove(a, 0); // removes the first element of the array
+    // /*
+    //     Worth noting array_t still uses v1 array, so array_remove and other functions
+    //     may be broken.
+    // */
+    // array_print(a); // prints: ["worldo!"]
 
-    array_destroy(a);
+    // array_destroy(a);
     // as array_t still uses v1, it does not comply on the new baseobject concept 
     // and it's not iterable yet
     // maybe soon?
@@ -76,20 +78,7 @@ int main(){
     // no space or any weird characters, only underscore
     println((char*)map_find(mp, "find_me")); // prints "You found me!"
     // the time complexity of map_find is O(N), where N is the size of an array
-    /*
-        What's time complexity?
-        It's a name used in programming to measure the computation time,
-        it uses mathematic notation called: "Big O Notation"
-        for example:
-        for(int i = 0; i < 10; i++){}
-        adds to N time complexity, where N is 10, so the big O notation is O(N)
-        it's like the one in Sigma
-        the more you add for loops, example 2 loops in one function
-        the N increases,
-        if you have 2 loops inside a function, then your function
-        time complexity is O(2N)
-        you can read more here: https://en.wikipedia.org/wiki/Time_complexity
-    */
+    
     map_set(mp, "find_me", "I'm here now!"); // sets the "find_me" to "I'm here now!"
     println((char*)map_find(mp, "find_me"));
     map_print(mp); // prints: {"abc": "Za warudo!!", "find_me": "I'm here now!"}
@@ -100,7 +89,7 @@ int main(){
     // on iterating the map.
 
     map_delete_id(mp, 0); // deletes Za warudo!! goodbye! (for delete by key, use map_delete)
-    drops(mp); // or mp->destroy(mp)
+    hdrop(mp); // or mp->destroy(mp)
     return 0;
 }
 

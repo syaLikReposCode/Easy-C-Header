@@ -44,20 +44,13 @@
 
 /*
 parts progressed:
-    just started
+    making a revision from previous test (code113)
 thoughts:
-    adding the char short_key into parsestr, if none, 0 to specify "No short_flag".
-    using the first elements of the flag as the short-hand flag
-test goal:
-    the program is expected to be able to read singular flag
-example input:
-    [COMPILED PROGRAM]
-    (TEST 1: -p short-hand to --pointer)
-    ./code113 test_arg -p ptr
-    (TEST 2: both flags included)
-    ./code113_name test_arg -p ptr --pointer ptr
-    (TEST 3: --pointer makes the first position)
-    ./code113 test --pointer ptr -p ptr
+    missing checks if the NO_SHORTFLAG is specified.
+    changes on shorthand_key to fixed size 3
+future plans:
+    actually making use of PARSE_INVALID_INPUT and enhance the accuracy
+    of arg_parse_noflag by removing "char* exclude" param to "int pos_at"
 */
 
 // temporary imports, more imports will be replaced if it contains a copy inside baseobject.h
@@ -74,6 +67,7 @@ example input:
 #define ERR_ERRNO_CONVERSION -5 // indicates the error is coming from errno
 #define ERR_NON_NUMERIC_CHAR -3 // indicates the `ENDPTR` does not consume all the string
 
+#define NO_SHORTFLAG 0
 
 // the environment to provide argument parser parameters
 typedef struct ArgumentsSupplier{
@@ -97,19 +91,18 @@ argparser_t argparser_setenv(int argc, const char** argv, char* flag){
 
 int arg_findpos(argparser_t arg, char* key, char short_key){
     // deep-copy the flag and short_key into stack memory
-    size_t total_shorthand = sizeof(char) * 2 + 1;
-    char shorthand_key[total_shorthand];
-    memset(shorthand_key, 0, total_shorthand);
+    int use_shorthand = short_key != NO_SHORTFLAG;
+    char shorthand_key[3];
+    if(use_shorthand){
+        shorthand_key[0] = arg.flag[0];
+        shorthand_key[1] = short_key;
+        shorthand_key[2] = '\0';
+    }
 
     // deep-copy the flag and key into stack memory
     size_t total_size = sizeof(char) * 1 + strlen(key) + arg.flag_size;
     char full_key[total_size];
     memset(full_key, 0, total_size);
-
-    // short-hand key
-    shorthand_key[0] = arg.flag[0];
-    shorthand_key[1] = short_key;
-    shorthand_key[2] = '\0';
     // full key
     strncpy(full_key, arg.flag, arg.flag_size);
     strcat(full_key, key);
@@ -117,7 +110,7 @@ int arg_findpos(argparser_t arg, char* key, char short_key){
     full_key[total_size] = '\0';
 
     for(int i = 0; i < arg.argc; i++){
-        if(strcmp(arg.argv[i], full_key) == 0 || strcmp(arg.argv[i], shorthand_key) == 0){
+        if(strcmp(arg.argv[i], full_key) == 0 || (strcmp(arg.argv[i], shorthand_key) == 0 && use_shorthand)){
             return i;
         }
     }
@@ -143,14 +136,11 @@ int arg_parsestr(argparser_t arg, char* key, char short_key, char** result){
 int main(int argc, const char **argv){
     argparser_t env = argparser_setenv(argc, argv, "--");
     
-    char* result;
-    int status = arg_parsestr(env, "pointer", 'p', &result);
+    char* result = NULL;
+    int status = arg_parsestr(env, "pointer", NO_SHORTFLAG, &result);
+    if(result == NULL)assert(0);
     if(strcmp(result, "ptr") != 0){
         free(result);
         assert(0);
     }
 }
-// test results: all passed
-// test 1: success
-// test 2: success
-// test 3: success

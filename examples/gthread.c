@@ -169,7 +169,7 @@ int main(void){
 
     gthread_end(d); // stops gthread 1 and free it's resources
     gthread_end(abc); // stops gthread 2 and free it's resources
-    co_arg->destroy(co_arg); // or you can call drops directly, it's registered! (drops(co_arg))
+    co_arg->destroy(co_arg); // or you can call hdrop directly, it's registered! (hdrop(co_arg))
 
     // good programmers always frees heap memory (RAM) when it's not needed, so it can be reused later
     

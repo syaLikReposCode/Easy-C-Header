@@ -213,12 +213,12 @@ void gthread_putarg(gthread_t* co, size_t app, ...){
     va_end(args);
 }
 
-// frees the gthread (registered in drop)
+// drops the gthread (registered in hdrop)
 void gthread_end(gthread_t* co){
-    free(co->args);
-    free(co->types);
-    free(co->context);
-    free(co);
+    drop(co->args);
+    drop(co->types);
+    drop(co->context);
+    drop(co);
 }
 #endif
 #endif

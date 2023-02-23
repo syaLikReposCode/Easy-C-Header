@@ -27,16 +27,16 @@ int main(){
     // example:
     println(randint(0, 10)); // will randomize number between 0 to 10
     // for string:
-    char* get = randstr(ALL, 5); // will use ALL macro string and generate string with length 5
-    println(get);
+    char* getrand = randstr(ALL, 5); // will use ALL macro string and generate string with length 5
+    println(getrand);
     // don't forget to free!
-    free(get);
+    free(getrand);
 
     // replacing example string:
-    char* get = repstr("You want to REPLACE game?", "REPLACE", "play");
-    println(get);
+    char* getrep = repstr("You want to REPLACE game?", "REPLACE", "play");
+    println(getrep);
     // free!!!
-    free(get);
+    free(getrep);
     // repstr has it's limitation it can only copy the length of TEXT (first param)
     // with only 100 bytes of memory, -1 for null termination
 

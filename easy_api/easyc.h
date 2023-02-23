@@ -33,7 +33,7 @@
                               void*: "memory", \
                               map_t*: "map",\
                               array_t*: "array",\
-                              gthread_t*: "task", \
+                              gthread_t*: "uthread", \
                                default: "unknown")
 #elif defined(STRUCTS)
 #define typecheck(T) _Generic( (T), int: "integer", \
@@ -190,7 +190,7 @@ void printMemoryLn(void* arg){
 
 // returns lowered string, stored in heap [heap]
 char* strtolower(char* str){
-    char* res = (char*)calloc(strlen(str) + 1, sizeof(char));
+    char* res = zmem(char, strlen(str) + 1);
     strcpy(res, "");
     for(int i = 0; i < strlen(str); i++){
         res[i] = tolower(str[i]);
@@ -200,7 +200,7 @@ char* strtolower(char* str){
 }
 // returns upper string, stored in heap [heap]
 char* strtoupper(char* str){
-    char* res = (char*)calloc(strlen(str) + 1, sizeof(char));
+    char* res = zmem(char, strlen(str) + 1);
     strcpy(res, "");
     for(int i = 0; i < strlen(str); i++){
         res[i] = toupper(str[i]);
@@ -283,7 +283,7 @@ size_t strsplit(char* src, const char* delim, char*** result) {
 
 #ifdef STRUCTS
 // base structure for any types that requires iterator
-typedef struct iterator_trait{
+typedef trait_ iterator_trait{
     const void* group;
     void* value;
     size_t pos;
@@ -300,6 +300,14 @@ void iterator_next_default(iterator_t* iter){}
 
 
 // start of array struct
+
+/*
+    WARNING! array_t use for now is discouraged,
+    the code is unsafe, and the capacity calculation is incorrect.
+    The code is looking forward for a fix, so please do not use array_t for now.
+    "What about in the example of standard_class.c?"
+    The example is broken because of array_t, so the array_t code is commented for now.
+*/
 
 typedef struct{
     void * data;
@@ -330,8 +338,8 @@ void array_push(array_t * a, void * element){
 }
 
 void array_destroy(array_t * a){
-    free(a->data);
-    free(a);
+    drop(a->data);
+    drop(a);
 }
 
 int array_get_int(array_t * a, int index){
@@ -387,7 +395,7 @@ void array_set_int(array_t * a, int index, int value){
     char * s = malloc(sizeof(int));
     sprintf(s, "%d", value);
     array_set(a, index, s);
-    free(s);
+    drop(s);
 }
 
 // end of array struct
@@ -421,11 +429,11 @@ pair_t pair_create(char* key, void* value){
     return pair;
 }
 
-// frees heap memory returned by pair_make
+// drops heap memory returned by pair_make
 void pair_destroy(pair_t* pair){
-    free(pair->key);
-    free(pair->value);
-    free(pair);
+    drop(pair->key);
+    drop(pair->value);
+    drop(pair);
 }
 
 // begin of map
@@ -552,10 +560,11 @@ void map_move(map_t* mp, size_t pos1, size_t pos2){
 void map_delete_id(map_t* mp, size_t at){
     if(mp->size == 0)return;
     if(at >= mp->size)return;
-    if(!at){
+    if(at == 0 && mp->size == 1){
         pair_destroy(mp->data[0]);
-        mp->data = realloc(mp->data, 1);
+        drop(mp->data);
         mp->size--;
+        mp->data = NULL; // prevent dangling pointer
         return;
     }
     for(size_t i = at; i < mp->size - 1; i++){
@@ -566,15 +575,16 @@ void map_delete_id(map_t* mp, size_t at){
     mp->size--;
 }
 
-// O(2N) -> index finding which is N for worst case and makes the I pair move to the end
+// O(2N) -> index finding which is N for average case and makes the I pair move to the end
 void map_delete(map_t* mp, char* key){
     if(mp->size == 0)return;
     long idx = map_index(mp, key);
     if(idx == -2)return;
-    if(!idx){
+    if(idx == 0 && mp->size == 1){
         pair_destroy(mp->data[0]);
-        free(mp->data);
+        drop(mp->data);
         mp->size--;
+        mp->data = NULL; // prevent dangling pointer
         return;
     }
     for(size_t i = idx; i < mp->size - 1; i++){
@@ -585,13 +595,13 @@ void map_delete(map_t* mp, char* key){
     mp->size--;
 }
 
-// frees map from heap
+// drops map from heap
 void map_destroy(map_t* mp){
     for(size_t i = 0; i < mp->size; i++){
         pair_destroy(mp->data[i]);
     }
-    free(mp->data);
-    free(mp);
+    drop(mp->data);
+    drop(mp);
 };
 
 // end of map

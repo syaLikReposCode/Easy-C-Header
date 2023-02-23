@@ -46,22 +46,18 @@ the entire header (including Exclusive API) is written in pure Standard C11 (Som
 # News
 Welcome to Beta phase, I will focus to add more APIs than standard easyc.h for now, easyc.h will uncommonly get new updates, APIs are provided in the `easy_api/ext` folder
 
-makes group in iterator field readonly
+commented array_t usage on `standard_class.c` because unstable implementation
 
-fixed typo
+enforces easyc.h and other headers to use the 'drop' entity from baseobject.
 
-moved the **Functions, Parameters and Typedefs** section to `doc_table/` folder (this took time to move, not even Exclusive APIs are included yet)
+fixed examples inside `standard.c` For redefining "GET" variable name
 
-renamed main folder `Easy_C/` to `easy_api/`
+typecheck now returns `gthread_t` as uthread (user-level thread)
 
-argument parsers! (view the file `examples/argparser.c` for more info!)
+added `CBITS` or (CPU Bits) entity to baseobject, uses `CHAR_BIT` and pointer size to determine bit, so for example, if your CPU is x86 then the `CBITS` will return 32.
 
-renamed ASCII_UPPER/LOWER to WORD_LOWER/UPPER
+added `trait_` (expands to struct) macro entity to baseobject in order to differentiate structs and traits
 
-renamed coroutine to gthread because inaccuracy name due to memory overhead (coroutine.h -> greenthread.h)
+renamed `alloc` to `umem` and `alloc_a` to `zmem`, `umem` for uninitialized memory and `zmem` for zero-initialized memory
 
-added nightly code (experimental) folder in `nightly/`, it's where I kept my progress tracked
-
-added sdrop and rdrop macro on baseobject entity
-
-renamed drops to hdrop (heap-drop) to make a reasonable drop variant
+fixed `map_delete_id` and `map_delete` to cause segmentation fault and memory leaks when given index is 0 and the size is not 1.
