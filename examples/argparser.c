@@ -19,13 +19,13 @@ void error(const char* msg){
 
 // let's create an error handler
 #define check_err(status) switch(status){ \
-        case PARSE_ALLOC_FAIL: \
+        case ALLOC_FAIL: \
         error("Failed to get the result of type, unable to allocate memory"); \
         break; \
         case PARSE_NPOS: \
         error("No flag arguments specified, (use --help to show available switch)"); \
         break; \
-        case PARSE_POS_EOL: \
+        case LPOS_EOL: \
         error("Expected arguments after flag, but got none"); \
         break; \
         case PARSE_INVALID_INPUT: \
@@ -42,9 +42,11 @@ int main(int argc, const char* argv[]){
     */
    // let's define which user specify it.
     char* op_type;
-    int status = arg_parsestr(env, "operation", &op_type);
+    int status = arg_parsestr(env, "operation", 'p', &op_type);
    // we need the status that arg_parsestr returns to create a robust app!
     check_err(status);
+    // the expected of op_type can be this arguments:
+    // "./your_program --operator wr" or "./your_program -p wr"
     // let's give a logic to our app
     if(strcmp(op_type, "wr") == 0){
         // freeing op_type as it's no longer needed (why so early? Because when check_err is not OK, it immediately exits
@@ -52,13 +54,13 @@ int main(int argc, const char* argv[]){
         free(op_type);
         // getting the file, expected program arguments: ./program [FILE] [SWITCH]
         char* get_file;
-        status = arg_parse_noflag(env, &get_file, NULL); // get the first non-flag parameter
+        status = arg_parse_noflag(env, &get_file, 0); // get the first non-flag parameter
         check_err(status);
-        // getting contents, expected program arguments: ./program [FILE] --content "content"
+        // getting contents, expected program arguments: ./program [FILE] --content "content" or ./program [FILE] -s "content"
         char* contents; 
-        status = arg_parsestr(env, "content", &contents); // get the second flag
+        status = arg_parsestr(env, "content", 's', &contents); // get the second flag
         // in case if the check_err is not OK.
-        if(status != PARSE_OK)free(get_file);
+        if(status != OPOK)free(get_file);
         check_err(status);
         FILE* fp = fopen(get_file, "w");
         fprintf(fp, "%s\n", contents);
@@ -70,11 +72,11 @@ int main(int argc, const char* argv[]){
     else if(strcmp(op_type, "rd") == 0){
         free(op_type);
         char* get_file;
-        status = arg_parse_noflag(env, &get_file, NULL);
+        status = arg_parse_noflag(env, &get_file, 0);
         check_err(status);
         int get_buf; // specify buffer for the read
-        status = arg_parsei32(env, "buf", &get_buf); // no more.
-        if(status != PARSE_OK)free(get_file); // in case error
+        status = arg_parsei32(env, "buf", 'c', &get_buf); // no more.
+        if(status != OPOK)free(get_file); // in case error
         check_err(status);
         // allocate memory for get_buf
         char* contents = calloc(get_buf + 1, sizeof(char));
@@ -99,7 +101,7 @@ int main(int argc, const char* argv[]){
     else if(strcmp(op_type, "cr") == 0){
         free(op_type);
         char* file_type;
-        status = arg_parse_noflag(env, &file_type, NULL);
+        status = arg_parse_noflag(env, &file_type, 0);
         check_err(status);
         FILE* fp = fopen(file_type, "w");
         fclose(fp);
@@ -117,6 +119,14 @@ int main(int argc, const char* argv[]){
     writing file
     ./program myfile.txt --operation wr --content "Hello, world!"
 
+    (shortflag version)
+    creating file
+    ./program myfile.txt -p cr
+    reading file
+    ./program myfile.txt -p rd -c 30
+    writing file
+    ./program myfile.txt -p wr -s "Hello, world!"
+    
     END OF EXAMPLE
     That's how you create a CLI App using this header,
     although it has some fallbacks it gets the job done,

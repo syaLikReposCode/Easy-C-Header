@@ -57,7 +57,7 @@ typedef struct GreenThread{
     int cotype;
     int yielded;
     void(*destroy)(struct GreenThread*); // green thread drop model
-} gthread_t;
+} gthread_t _THROWABLE; // a green thread, variants of user-level threads. (Throwable)
 
 void gthread_end(gthread_t* co);
 

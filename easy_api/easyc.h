@@ -4,7 +4,8 @@
 
 #define _EASY_C_HEADER 1
 #define AUTHOR "syaLikShreer"
-#define EASY_C_VERSION "1.5b"
+#define EASY_C_VERSION "1.6b"
+#define NO_FILE_INSTANCE -11 // indicates the file pointer passed is null
 // standard library import
 #include <stdio.h>
 #include <stdbool.h>
@@ -188,8 +189,8 @@ void printMemoryLn(void* arg){
 #endif
 
 
-// returns lowered string, stored in heap [heap]
-char* strtolower(char* str){
+// returns lowered string, stored in heap [heap] (Throwable)
+char* strtolower(char* str) _THROWABLE{
     char* res = zmem(char, strlen(str) + 1);
     strcpy(res, "");
     for(int i = 0; i < strlen(str); i++){
@@ -198,8 +199,8 @@ char* strtolower(char* str){
     res[strlen(str)] = '\0';
     return res;
 }
-// returns upper string, stored in heap [heap]
-char* strtoupper(char* str){
+// returns upper string, stored in heap [heap] (Throwable)
+char* strtoupper(char* str) _THROWABLE{
     char* res = zmem(char, strlen(str) + 1);
     strcpy(res, "");
     for(int i = 0; i < strlen(str); i++){
@@ -209,8 +210,8 @@ char* strtoupper(char* str){
     return res;
 }
 
-// replaces string if found [heap]  (100 chars max)
-char * repstr(char * text, char * old, char * newstr){
+// replaces string if found [heap]  (100 chars max) (Throwable)
+char * repstr(char * text, char * old, char * newstr) _THROWABLE{
     char * res = (char *)malloc(sizeof(char) * 100);
     strcpy(res, text);
     char * p = strstr(res, old);
@@ -232,8 +233,8 @@ int randint(int min, int max){
     return res;
 }
 void seed(){srand(time(NULL));}
-// generates pseudo-random string based on length specified (seed call is required) [heap]
-char * randstr(char* str,int length){ 
+// generates pseudo-random string based on length specified (seed call is required) [heap] (Throwable)
+char * randstr(char* str,int length) _THROWABLE{ 
     char * res = (char *)malloc(sizeof(char) * length);
     for(int i = 0; i<length; i++){
         res[i] = str[randint(0, strlen(str))];
@@ -244,8 +245,8 @@ char * randstr(char* str,int length){
     return res;
 }
 
-// compares 2 string ignoring case
-int strcmpcase(char* st1, char* st2){
+// compares 2 string ignoring case (Throwable)
+int strcmpcase(char* st1, char* st2) _THROWABLE{
     char* lw = strtolower(st1);
     char* l2w = strtolower(st2);
     int cmp = strcmp(lw, l2w);
@@ -255,8 +256,8 @@ int strcmpcase(char* st1, char* st2){
 }
 
 // splits the SRC string with DELIM, returns the result in the RESULT reference
-// returns the counter of splitted string
-size_t strsplit(char* src, const char* delim, char*** result) {
+// returns the counter of splitted string (Throwable)
+size_t strsplit(char* src, const char* delim, char*** result) _THROWABLE{
     size_t count = 0;
     size_t len = strlen(src);
     char* copy = (char*) malloc((len + 1) * sizeof(char));
@@ -278,6 +279,36 @@ size_t strsplit(char* src, const char* delim, char*** result) {
     }
     drop(copy);
     return count;
+}
+
+// reads a single line from fp, an optional integer pointer of cause can be specified if robustness is necessary.
+// the time complexity for this function is linear, or O(N) where N is the amount of characters in a line
+char* readline(FILE* fp, int *cause){
+    if(fp == NULL){
+        if(cause != NULL)*cause = NO_FILE_INSTANCE;
+        return NULL;
+    }
+    char *line = NULL;
+    char c = fgetc(fp);
+    if(c == EOF){
+        if(cause != NULL)*cause = LPOS_EOL;
+        return NULL;
+    }
+    size_t linectr = 0;
+    while(c != '\n' && c != EOF){
+        linectr++;
+        line = (char*)realloc(line, linectr * sizeof(char));
+        if(line == NULL){
+            if(cause != NULL)*cause = ALLOC_FAIL;
+            return NULL;
+        }
+        line[linectr-1] = c;
+        c = fgetc(fp);
+    }
+    line = (char*)realloc(line, linectr * sizeof(char) + 1);
+    line[linectr] = '\0';
+    if(cause != NULL)*cause = 0;
+    return line;
 }
 
 
@@ -314,7 +345,7 @@ typedef struct{
     int length;
     int capacity;
     int elementSize;
-} array_t;
+} array_t _THROWABLE _ANCIENT_FEATURE; // a growable array type (Throwable) (Ancient)
 array_t * array_new(int elementSize){
     array_t * a = malloc(sizeof(array_t));
     a->data = malloc(sizeof(elementSize));
@@ -400,12 +431,12 @@ void array_set_int(array_t * a, int index, int value){
 
 // end of array struct
 
-// independent-type pair.
+// independent-type pair. (Throwable)
 typedef struct Pair{
     char* key;
     void* value;
     void(*destroy)(struct Pair*);
-} pair_t;
+} pair_t _THROWABLE;
 
 void pair_destroy(pair_t* pair);
 
@@ -438,13 +469,13 @@ void pair_destroy(pair_t* pair){
 
 // begin of map
 
-// map type, utilizes heap storage for use
+// map type, utilizes heap storage for use (Throwable)
 typedef struct Map{
     pair_t** data;
     size_t size;
     iterator_t(*create_iter)(struct Map*);
     void(*destroy)(struct Map*);
-} map_t;
+} map_t _THROWABLE;
 
 // prototypes so map_new can access
 

@@ -16,6 +16,10 @@
 #include <limits.h>
 
 
+#define ALLOC_FAIL -2 // indicates malloc or similar has failed it's allocation
+#define LPOS_EOL -4 // indicates the position line is out-of-range or at EOF
+#define OPOK 0 // indicates the operation ran without any issues
+
 // an alias for struct except it has no member functions, or the members are in field.
 // Known as interface or trait. (example trait: iterator)
 #define trait_ struct
@@ -25,6 +29,13 @@
 // allocates N array memory of T type with the size of T, returns heap memory with 0 initialized.
 #define zmem(T, N) ((T*)calloc(N, sizeof(T)))
 
+// mark if the function/classes does not implement an option for robustness yet
+// which mean segmentation fault will occur at anytime.
+#define _THROWABLE
+
+// mark if the implementation still survives from v1 and does not get updated yet
+// any functions/classes marked with this means, unsafe codes are more common
+#define _ANCIENT_FEATURE
 
 /* (Nonexistent-implementation) that represents base trait to be applied to every structs
 #set-entity nonexistent

@@ -38,7 +38,7 @@ For Beginners, Learn how the function works, then I'm sure you will understand h
 For Experts, Sorry this is not for you! The implementation is not optimized or efficient in any way, if you're willing to improve it, fork it and pull request!
 
 # Version
-header currently version 1.5 beta
+header currently version 1.6 beta
 
 # Written
 the entire header (including Exclusive API) is written in pure Standard C11 (Some Exclusive APIs in the future may use non-standard function)
@@ -46,18 +46,18 @@ the entire header (including Exclusive API) is written in pure Standard C11 (Som
 # News
 Welcome to Beta phase, I will focus to add more APIs than standard easyc.h for now, easyc.h will uncommonly get new updates, APIs are provided in the `easy_api/ext` folder
 
-commented array_t usage on `standard_class.c` because unstable implementation
+small changes:
 
-enforces easyc.h and other headers to use the 'drop' entity from baseobject.
+    added readline function in the standard, examples and the doc_table aswell.
 
-fixed examples inside `standard.c` For redefining "GET" variable name
+    support for short flag in argparser
 
-typecheck now returns `gthread_t` as uthread (user-level thread)
+    argparser example now has an example for short flag
 
-added `CBITS` or (CPU Bits) entity to baseobject, uses `CHAR_BIT` and pointer size to determine bit, so for example, if your CPU is x86 then the `CBITS` will return 32.
+    added `arg_checkflag` to check if the input is standalone or a flag input
 
-added `trait_` (expands to struct) macro entity to baseobject in order to differentiate structs and traits
+    added `LPOS_EOL, ALLOC_FAIL, OPOK` constants entity on baseobject error code.
 
-renamed `alloc` to `umem` and `alloc_a` to `zmem`, `umem` for uninitialized memory and `zmem` for zero-initialized memory
+    added `_THROWABLE` in baseobject indicating the entire classes (usually this marked onto the struct), or functions does not implement robust option yet. (it does nothing)
 
-fixed `map_delete_id` and `map_delete` to cause segmentation fault and memory leaks when given index is 0 and the size is not 1.
+    added `_ANCIENT_FEATURE` if the implementation still uses v1 (this will get removed if there are no v1 features available)

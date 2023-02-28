@@ -63,6 +63,30 @@ int main(){
         */
     }
     free(result); // freeing the result container
+
+    // what if we want to read a single line of a file without caring it's buffer? readline will do it for you!
+    int cause; // to get the cause of our errors.
+    FILE* fp = fopen("anyfile.txt", "r"); // provide our file with read mode
+    // don't worry, readline will check whether the file is NULL (do not exist / can't open)
+    // that's why cause can become very handy!
+
+    char* line = readline(fp, &cause); // this is a heap memory
+    // although you can specify the second parameter in readline to NULL, but it's not recommended
+    // if you're targetting robust app.
+
+    printf("%s\n", line); // should print the first line
+    free(line); // FREE!!!!
+    /*
+        what if we want to read until the end?
+        we simply do:
+        char* get = NULL;
+        while(((get = readline(fp, &cause)) != NULL) && (cause == OPOK)){
+            printf("%s\n", get);
+            free(get); // since we don't use it
+        }
+        after that check if there's any errors
+        // free(get); // absolutely safe because readline returns NULL, never a dangling pointer!
+    */
     return 0;
 }
 

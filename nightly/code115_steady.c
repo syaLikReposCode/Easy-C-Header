@@ -1,9 +1,40 @@
-#ifdef STRUCTS
-#ifndef _EXT_ARG_PARSER
-#define _EXT_ARG_PARSER 1
+/*
+    (CODE PROGRESS 115, MAKING USE OF PARSE_INVALID_INPUT AND ENHANCING ARG_PARSE_NOFLAG)
+
+        MIT License
+
+    Copyright (c) 2022 syaLikShreer
+    
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+    
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+
+*/
+
+/*
+    Future plans:
+    This is the sum up for code113 and code114
+    should be the final nightly codes for argparser.
+
+*/
+
+// This file indicates the code 115. The final nightly code for argparser feature
 
 #include <errno.h>
-#include <stdio.h>
 #include "../baseobject.h"
 
 #define PARSE_NPOS -1 // indicates the position is not found
@@ -43,6 +74,7 @@ argparser_t argparser_setenv(int argc, const char** argv, char* flag){
 // determines whether the input of a flag position is a input or another flag.
 int arg_isinput(argparser_t arg, int id){
     if(id < 0 || id >= arg.argc)return 0;
+    if(strstr(arg.argv[id], arg.flag) == NULL)return 1;
     return strstr(arg.argv[id+1], arg.flag) == NULL;
 }
 
@@ -191,11 +223,12 @@ int arg_parsebool(argparser_t arg, char* key, char short_key, int* result){
 }
 
 // get the first argument that is present without a flag
-// will search for the next non-flagged argv if the exclude were not null.
-int arg_parse_noflag(argparser_t arg, char** result, char* exclude){
+// will search for the next non-flagged argv based on position
+int arg_parse_noflag(argparser_t arg, char** result, int pos_at){
+    int cur = 0;
     for(int i = 1; i < arg.argc; i++){
-        if(strstr(arg.argv[i], arg.flag) == NULL){
-            if(strcmp(arg.argv[i], exclude) == 0)continue;
+        if(strstr(arg.argv[i], arg.flag) == NULL && cur == pos_at){
+            if(i != 1 && arg_isinput(arg, i - 1))continue;
             *result = malloc(sizeof(char) * strlen(arg.argv[i]) + 1);
             if(*result == NULL){
                 return ALLOC_FAIL;
@@ -203,11 +236,8 @@ int arg_parse_noflag(argparser_t arg, char** result, char* exclude){
             strcpy(*result, arg.argv[i]);
             return OPOK;
         }
+        cur++;
     }
     *result = NULL;
     return PARSE_NPOS;
 }
-
-
-#endif
-#endif

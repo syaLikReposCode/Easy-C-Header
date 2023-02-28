@@ -21,6 +21,7 @@
 | seed               | Sets the random seed to time(NULL)  |        none         |  none                               |             base                 |
 | strcmpcase         | Compare 2 string ignoring the case  |        int          |  char* str1, char* str2             |             base                 |
 | strsplit           | Splits the given string and delim   |        size_t       |  char* src, char* dlim, char*** res |             base                 |
+| readline           | Reads a line and return it in heap  |        char*        |  FILE* fp, int* cause               |             base                 |
 ===========================================================================================================================================================
 
 

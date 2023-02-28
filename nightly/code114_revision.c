@@ -1,5 +1,5 @@
 /*
-    (CODE PROGRESS 113, ARGUMENT SINGULAR-FLAG)
+    (CODE PROGRESS 114, REVISION FROM CODE 113)
 
         MIT License
 
@@ -27,16 +27,8 @@
 
 /*
     Future plans:
-    So uh I am working at this to use singular flags like in Python,
-    this will be done soon (I hope), also I will learn Assembly
-    so I can actually make a coroutine header, stack-based though
-    this time is not a gthread (Green Thread) and actually lightweight
-    but mention that one that makes it not lightweight depends on your arguments needed
-    (
-        Becoz the arguments is heap-allocated, I can't do anything about it
-        or i just have to delete the *_putarg thing to prevent rescaling
-    )
-    If possible, I'll make them stack'd too
+    I will actually make use of PARSE_INVALID_INPUT
+    and changes the way arg_parse_noflag behaves.
 */
 
 // This File indicates the code for 113. Which is a pointer to
@@ -48,9 +40,14 @@ parts progressed:
 thoughts:
     missing checks if the NO_SHORTFLAG is specified.
     changes on shorthand_key to fixed size 3
-future plans:
-    actually making use of PARSE_INVALID_INPUT and enhance the accuracy
-    of arg_parse_noflag by removing "char* exclude" param to "int pos_at"
+tests:
+    [PRECOMPILED]
+    (Test 1: NO_SHORTFLAG is tested, should not give any results)
+    ./code114 -p "nothing"
+    (Test 2: flag '-p' is added, "ptr" shall be returned.)
+    ./code114 -p "ptr"
+    [COMPILED PROGRAM]
+    No test at runtime.
 */
 
 // temporary imports, more imports will be replaced if it contains a copy inside baseobject.h
@@ -144,3 +141,9 @@ int main(int argc, const char **argv){
         assert(0);
     }
 }
+// TEST RESULTS
+// [PRECOMPILED]
+// Test 1: Passed
+// Test 2: Passed
+// [COMPILED PROGRAM]
+// No test.
