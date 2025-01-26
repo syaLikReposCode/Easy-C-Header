@@ -1,7 +1,7 @@
 # Easy C
-(REWRITE: easyc.h is being rewritted, old easyc needs to import 'old_easyc.h')
+**(NOTICE)**
+**This project has been moved to a new repository called Abstrax, you can view them [here](https://github.com/syaLikReposCode/Abstrax/tree/main)**
 
-(old Easy C was considered unsafe and spaghetti code)
 
 some random Header that might helps your C coding, how to use it?
 
